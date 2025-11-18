@@ -19,6 +19,9 @@ This week, we are focusing on the Open/Closed Principle (OCP) and how it contrib
 
 ## 3. This Week’s Work
 
+**REVISED: See "Before OCP" Anti-Pattern First**
+
+- **Step 0:** Review "Before OCP" example (Section 11 below) - understand what NOT to do - 10 min
 - Implement `StatusTaskFilter`, `PriorityTaskFilter`, `DueDateTaskFilter`, and `CompositeTaskFilter`.
 - Add `ITaskFilterFactory` (or similar) to build filters based on query parameters.
 - Update `TaskService` (or controller) to use filters when fetching tasks.
@@ -94,3 +97,91 @@ dotnet test TaskFlowAPI.sln
 - **[Open-Closed Principle in Java - GeeksForGeeks](https://www.geeksforgeeks.org/open-closed-principle-in-java-with-examples/)** - Practical implementation examples in Java.
 - **[Mastering SOLID: Open-Closed Principle - LinkedIn](https://www.linkedin.com/pulse/solid-principles-python-open-closed-principle-mahdi-jafari)** - Modern interpretation with Python examples.
 - **[Open-Closed Principle in Practice - HowToDoInJava](https://howtodoinjava.com/best-practices/open-closed-principle/)** - Real-world applications and best practices.
+
+## 11. "Before OCP" Anti-Pattern (NEW - Learn What NOT To Do)
+
+**Goal:** See the problem OCP solves (if/else explosion)
+
+**Time:** 10 minutes
+
+### The Anti-Pattern: Modification Required for Each Feature
+
+```csharp
+// ❌ BAD: Violates OCP - must modify this method for each new filter
+public async Task<List<TaskDto>> GetAllTasksAsync(
+    string? status = null,
+    int? priority = null,
+    DateTime? dueBefore = null)
+{
+    var tasks = await _repository.GetAllAsync();
+    var results = tasks.AsEnumerable();
+    
+    // IF/ELSE CASCADE GROWS WITH EACH FEATURE
+    if (status != null)
+    {
+        if (status == "Completed")
+            results = results.Where(t => t.IsCompleted);
+        else if (status == "Pending")
+            results = results.Where(t => !t.IsCompleted);
+    }
+    
+    if (priority != null)
+        results = results.Where(t => t.Priority == priority);
+    
+    if (dueBefore != null)
+        results = results.Where(t => t.DueDate < dueBefore);
+    
+    // Method grows forever with each new filter...
+    
+    return results.Select(_mapper.ToDto).ToList();
+}
+```
+
+**Problems:**
+- ❌ Every new filter requires changing this method
+- ❌ Method gets longer (SRP violation)
+- ❌ Testing nightmare (2^N combinations)
+- ❌ Merge conflicts
+
+### The OCP Solution: Strategy Pattern
+
+```csharp
+// ✅ GOOD: Open for extension, closed for modification
+public async Task<List<TaskDto>> GetAllTasksAsync(ITaskFilter? filter = null)
+{
+    var tasks = await _repository.GetAllAsync();
+    
+    if (filter != null)
+        tasks = tasks.Where(filter.IsMatch).ToList();
+    
+    return tasks.Select(_mapper.ToDto).ToList();
+}
+```
+
+**Benefits:**
+- ✅ New filter = new class (service unchanged)
+- ✅ Service stays same size
+- ✅ Easy testing (each filter independent)
+
+---
+
+## 12. When NOT To Use OCP (NEW - Avoid Premature Abstraction)
+
+**Goal:** Know when OCP is overkill
+
+**Decision Matrix:**
+
+| Scenario | Use OCP? | Why? |
+|----------|---------|------|
+| Task filtering (3+ types) | ✅ YES | Multiple variations, user-driven |
+| Payment processors | ✅ YES | Stripe, PayPal - clear variation |
+| Single SMTP email | ❌ NO | Only one implementation |
+| Simple CRUD | ❌ NO | Same for all entities |
+
+**Rule of Three:**
+1. First time: Implement directly
+2. Second time: Notice duplication
+3. Third time: Refactor to OCP
+
+**This Week:** Task filtering justified (5+ filter types expected)
+
