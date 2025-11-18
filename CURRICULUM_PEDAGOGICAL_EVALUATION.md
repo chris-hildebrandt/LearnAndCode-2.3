@@ -946,7 +946,7 @@ Not everything needs encapsulation. Use this framework:
 
 **Why:** EF Core needs to instantiate entities when reading from database
 
-**Fix:**
+**Fix - Option A (Traditional):**
 ```csharp
 private TaskEntity()  // MUST be private, not public!
 {
@@ -954,7 +954,20 @@ private TaskEntity()  // MUST be private, not public!
 }
 ```
 
-**Rule:** Keep public static factory, private parameterless constructor for EF
+**Fix - Option B (Modern C# 9+ - RECOMMENDED for Juniors):**
+```csharp
+// No parameterless constructor needed with init setters!
+public class TaskEntity
+{
+    public string Title { get; init; } = string.Empty;
+    public int Priority { get; init; }
+    public bool IsCompleted { get; private set; }  // Still mutable via Complete()
+    
+    // EF Core 5+ supports init setters natively
+}
+```
+
+**Rule:** Use `init` setters for simple immutability, OR traditional pattern for complex validation
 
 ---
 
@@ -963,12 +976,28 @@ private TaskEntity()  // MUST be private, not public!
 
 **Why:** EF Core needs setter to hydrate from database
 
-**Fix - Option A (Preferred):**
+**Fix - Option A (Modern - Recommended):**
+```csharp
+public string Title { get; init; } = string.Empty;  // ⭐ Immutable after construction
+```
+
+**Benefits of init:**
+- ✅ Simpler syntax (less boilerplate)
+- ✅ Works with object initializers AND seed data
+- ✅ EF Core 5+ fully supports it
+- ✅ Junior-friendly (clear intent)
+
+**Fix - Option B (Traditional):**
 ```csharp
 public string Title { get; private set; }  // private SET
 ```
 
-**Fix - Option B (Advanced):**
+**Use traditional when:**
+- Need custom validation in setter
+- Complex invariant enforcement
+- Working with older EF Core versions (< 5.0)
+
+**Fix - Option C (Advanced):**
 ```csharp
 private string _title;
 public string Title => _title;  // Read-only property
@@ -977,14 +1006,14 @@ public string Title => _title;  // Read-only property
 _title = null!;  // Allow EF Core to set via reflection
 ```
 
-**Rule:** Use `private set` for EF Core compatibility
+**Rule:** Start with `init` setters for simplicity, use `private set` for validation needs
 
 ---
 
 ### Problem 3: Seed data doesn't compile
 **Error:** `Cannot initialize property 'Title' - no accessible setter`
 
-**Before (Broken):**
+**Before (Broken with private set):**
 ```csharp
 new TaskEntity 
 { 
@@ -992,20 +1021,68 @@ new TaskEntity
 }
 ```
 
-**After (Fixed):**
+**After - Option A (Using init setters):**
+```csharp
+new TaskEntity 
+{ 
+    Title = "Task 1",  // ✓ Works! init allows object initializer
+    Priority = 1,
+    ProjectId = 1
+}
+```
+
+**After - Option B (Using factory method):**
 ```csharp
 TaskEntity.Create("Task 1", projectId: 1)
 ```
 
-**Rule:** All seed data must use factory method now
+**Rule:** With `init` setters, seed data works normally. With `private set`, use factory.
 
 ---
 
 **Cheat Sheet:**
-1. Keep private parameterless constructor for EF Core
-2. Use `public Type Property { get; private set; }` pattern
-3. Use factory method in seed data
-4. Navigation properties (Project) can stay auto-property
+
+**Approach 1: Init Setters (Simpler - Recommended for Week 7)**
+```csharp
+public class TaskEntity
+{
+    public string Title { get; init; } = string.Empty;  // Immutable after construction
+    public int Priority { get; init; }
+    public bool IsCompleted { get; private set; }  // Methods can still modify
+    
+    public void Complete() 
+    { 
+        IsCompleted = true; 
+        CompletedAt = DateTime.UtcNow;
+    }
+}
+
+// Seed data works normally:
+new TaskEntity { Title = "Test", Priority = 1 }  // ✓
+```
+
+**Approach 2: Private Setters + Factory (More Control)**
+```csharp
+public class TaskEntity
+{
+    private string _title;
+    public string Title { get => _title; private set => _title = value ?? throw ...; }
+    
+    private TaskEntity() { _title = string.Empty; }  // EF Core needs this
+    
+    public static TaskEntity Create(string title, int projectId)
+    {
+        return new TaskEntity { Title = title, ProjectId = projectId };
+    }
+}
+
+// Seed data uses factory:
+TaskEntity.Create("Test", 1)  // ✓
+```
+
+**Choose based on your needs:**
+- Need simple immutability? → Use `init` setters ⭐
+- Need validation in setter? → Use `private set` + factory
 ```
 
 **Rationale:**
@@ -1871,6 +1948,149 @@ switch (exception)
 
 ---
 
+**RECOMMENDATION 10.4: Add FluentValidation DI Registration Pattern**
+```markdown
+## NEW RESOURCE: FluentValidation Dependency Injection
+
+### How Validators Get Injected
+
+**In Program.cs (before builder.Build()):**
+
+```csharp
+using FluentValidation;
+using FluentValidation.AspNetCore;
+
+// Option 1: Auto-register all validators from assembly (RECOMMENDED)
+builder.Services.AddFluentValidation(config =>
+{
+    config.RegisterValidatorsFromAssemblyContaining<CreateTaskValidator>();
+    config.AutomaticValidationEnabled = true; // Validates before action executes
+});
+
+// Option 2: Manual registration (more explicit, more verbose)
+builder.Services.AddScoped<IValidator<CreateTaskRequest>, CreateTaskValidator>();
+builder.Services.AddScoped<IValidator<UpdateTaskRequest>, UpdateTaskValidator>();
+```
+
+---
+
+### How It Works (Auto-Registration)
+
+**Step 1:** ASP.NET Core discovers validators via DI  
+**Step 2:** When controller action has `CreateTaskRequest` parameter, framework runs `CreateTaskValidator` automatically  
+**Step 3:** If validation fails, returns 400 Bad Request with error details (no controller code needed!)
+
+---
+
+### Controller Code (No Manual Validation!)
+
+```csharp
+[HttpPost]
+public async Task<ActionResult<TaskDto>> CreateTask(CreateTaskRequest request)
+{
+    // ✅ Validator already ran! If we're here, request is valid
+    var result = await _service.CreateTaskAsync(request);
+    return CreatedAtAction(nameof(GetTask), new { id = result.Id }, result);
+}
+```
+
+**What happened behind the scenes:**
+1. ASP.NET Core deserialized JSON → `CreateTaskRequest` object
+2. DI container found `CreateTaskValidator` for that type
+3. Validator ran: `await _validator.ValidateAsync(request)`
+4. If invalid: returned 400 + validation errors (action never executed)
+5. If valid: action executed normally
+
+---
+
+### Manual Validation (When Needed)
+
+**Use Case:** Need to validate in service layer (not just controller)
+
+```csharp
+public class TaskService
+{
+    private readonly IValidator<CreateTaskRequest> _validator;
+    private readonly ITaskWriter _taskWriter;
+    
+    public TaskService(
+        IValidator<CreateTaskRequest> validator,
+        ITaskWriter taskWriter)
+    {
+        _validator = validator;
+        _taskWriter = taskWriter;
+    }
+    
+    public async Task<TaskDto> CreateTaskAsync(CreateTaskRequest request)
+    {
+        // Manual validation when needed
+        var validationResult = await _validator.ValidateAsync(request);
+        
+        if (!validationResult.IsValid)
+        {
+            var errors = validationResult.Errors
+                .Select(e => e.ErrorMessage)
+                .ToList();
+            throw new DomainValidationException(errors);
+        }
+        
+        // Proceed with validated request
+        var entity = _factory.CreateNewTask(request);
+        var created = await _taskWriter.CreateAsync(entity);
+        return _mapper.ToDto(created);
+    }
+}
+```
+
+---
+
+### Error Response Format
+
+**When validation fails, ASP.NET Core returns:**
+
+```json
+{
+  "type": "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+  "title": "One or more validation errors occurred.",
+  "status": 400,
+  "errors": {
+    "Title": ["Title is required", "Title must be between 3 and 100 characters"],
+    "Priority": ["Priority must be between 0 and 5"]
+  }
+}
+```
+
+**Clean, standardized error format!**
+
+---
+
+### This Week's Approach
+
+**Use Auto-Registration (Option 1):**
+- ✅ Simple setup (one line in Program.cs)
+- ✅ Automatic discovery (no manual wiring)
+- ✅ Validation runs before controller action
+- ✅ Standard error responses
+
+**Why NOT manual validation in controllers:**
+- ❌ Repetitive (every action needs validation code)
+- ❌ Easy to forget
+- ❌ Inconsistent error format
+
+**Deliverable:** Add auto-registration to Program.cs, verify validators run automatically
+```
+
+**Rationale:**
+- Makes DI pattern explicit (addresses agent feedback)
+- Shows both auto and manual approaches
+- Explains what happens behind the scenes
+- Clear benefits of auto-registration
+- Students understand framework "magic"
+
+**Time Impact:** +5 minutes (essential understanding)
+
+---
+
 ## Weeks 11-12: SOLID Principles (Batch 2 - Part 2)
 
 ### Week 11: Single Responsibility Principle
@@ -2509,15 +2729,170 @@ public bool IsCompleted { get; set; }
 
 #### Recommendations:
 
-**RECOMMENDATION 13.1: Add "Broken LSP" Anti-Pattern Example**
+**RECOMMENDATION 13.1: Add Discovery Lab with Generic Examples (REVISED - SUPERIOR APPROACH)**
 ```markdown
-## NEW PRE-WORK: See LSP Violation (15 minutes)
+## REVISED WEEK 13: Discovery-Based LSP Learning
 
-Before implementing contract tests, understand the problem LSP solves:
+**⚠️ PEDAGOGICAL IMPROVEMENT:** Based on learning theory research, students remember principles better when they DISCOVER bugs themselves, then learn the principle as the solution. This staged approach creates a memorable "aha!" moment.
 
-### The Problem: Broken Substitutability
+---
 
-**Scenario:** Two ITaskRepository implementations with different behavior
+### Stage 1: Generic LSP Lab (30 minutes - NEW)
+
+**Goal:** Discover LSP violation in simple, relatable domain BEFORE TaskFlow complexity
+
+**Location:** `TaskFlowAPI.Tests/Examples/LSPLab/ShapeHierarchy.cs`
+
+#### The Setup: Everything Seems Fine
+
+```csharp
+/// <summary>
+/// LSP Lab: Broken shape hierarchy
+/// Your task: Run tests, identify the bug, fix the hierarchy
+/// </summary>
+public interface IShape
+{
+    int GetArea();
+    void SetWidth(int width);
+    void SetHeight(int height);
+}
+
+public class Rectangle : IShape
+{
+    protected int _width, _height;
+    
+    public int GetArea() => _width * _height;
+    public void SetWidth(int w) => _width = w;
+    public void SetHeight(int h) => _height = h;
+}
+
+public class Square : IShape  // ❌ VIOLATES LSP
+{
+    private int _side;
+    
+    public int GetArea() => _side * _side;
+    
+    // BUG: Square changes BOTH dimensions when setting one!
+    public void SetWidth(int w)
+    {
+        _side = w;  // ❌ Also changes height!
+    }
+    
+    public void SetHeight(int h)
+    {
+        _side = h;  // ❌ Also changes width!
+    }
+}
+```
+
+#### The Twist: New Requirement Breaks Everything
+
+**Client Code (looks correct):**
+```csharp
+public class ShapeResizer
+{
+    // This method works for any IShape... or does it?
+    public void ResizeToRectangle(IShape shape)
+    {
+        shape.SetWidth(5);
+        shape.SetHeight(10);
+        
+        // Expectation: shape is now 5x10 rectangle
+        // Reality: Square is 10x10 (height overwrote width!)
+    }
+}
+```
+
+#### The Climax: Test Reveals the Bug
+
+**Contract Test (provided to students):**
+```csharp
+[Theory]
+[InlineData(typeof(Rectangle))]
+[InlineData(typeof(Square))]  // ❌ This will FAIL
+public void Shape_SetWidthAndHeight_MaintainsIndependence(Type shapeType)
+{
+    // Arrange
+    var shape = (IShape)Activator.CreateInstance(shapeType);
+    
+    // Act
+    shape.SetWidth(5);
+    shape.SetHeight(10);
+    
+    // Assert
+    var area = shape.GetArea();
+    area.Should().Be(50);  // Expected: 5 * 10 = 50
+    
+    // Rectangle: ✓ 50
+    // Square: ❌ 100 (both dimensions became 10!)
+}
+```
+
+**Run test:** `dotnet test --filter Shape_SetWidthAndHeight`  
+**Result:** ❌ Test FAILS for Square!
+
+```
+Expected area to be 50, but found 100.
+```
+
+#### Student Task: Fix the Violation
+
+**Questions to answer in `docs/week-13-lsp-lab.md`:**
+
+1. **Why did the test fail for Square?** (50 words)
+   - Hint: What assumption did `ResizeToRectangle` make about width/height independence?
+
+2. **Identify the LSP Red Flag:** Which one applies?
+   - [ ] Subtype **strengthened preconditions** (requires more than parent)
+   - [ ] Subtype **weakened postconditions** (delivers less than parent)
+   - [x] Subtype **changed behavioral contract** (different side effects)
+   - [ ] Subtype **throws new exceptions** (caller not expecting)
+
+3. **Your Fix:** Choose ONE approach and implement it:
+
+**Option A: Remove Square from hierarchy**
+```csharp
+// Square is NOT a behavioral substitute for IShape
+// Keep Square as separate class with single SetSize(int) method
+public class Square  // No longer implements IShape
+{
+    private int _side;
+    public int GetArea() => _side * _side;
+    public void SetSize(int size) => _side = size;  // ✓ No false promises
+}
+```
+
+**Option B: Change interface contract (affects ALL shapes)**
+```csharp
+// Make width/height ALWAYS coupled for all IShape implementations
+public interface IShape
+{
+    int GetArea();
+    void SetSize(int width, int height);  // Both parameters required
+}
+
+// Now Square's behavior matches contract
+public class Square : IShape
+{
+    private int _side;
+    public int GetArea() => _side * _side;
+    public void SetSize(int width, int height) => _side = Math.Max(width, height);
+}
+```
+
+4. **Run tests again:** Which option made tests pass?
+
+**Deliverable:** Fixed hierarchy + completed `docs/week-13-lsp-lab.md`
+
+---
+
+### Stage 2: Apply to TaskFlow (45-60 minutes)
+
+**Now that you understand LSP through shapes, apply it to TaskFlow:**
+
+#### The Problem: Broken Substitutability in Repository
+
+**Scenario:** Two ITaskRepository implementations with different behavior (same issue, different domain)
 
 ```csharp
 // Contract (implied): GetByIdAsync returns null when task doesn't exist
@@ -2640,21 +3015,61 @@ public async Task GetByIdAsync_WhenNotFound_ReturnsNull(Type repoType)
 }
 ```
 
-**This Week:** You'll ensure real and fake have identical behavior
+**This Week (Stage 2):** You'll ensure real and fake TaskRepository have identical behavior
 
-**Deliverable:** In `docs/week-13-lsp-analysis.md`, answer:
-1. Why can't TaskService handle both null and exception? (50 words)
-2. What happens if Fake throws but Real returns null? (50 words)
-3. List 2 other behavioral differences that would break LSP. (50 words)
+**Deliverable:** 
+1. ✅ Stage 1: Fixed shape hierarchy with explanation
+2. ✅ Stage 2: Contract tests pass for both TaskRepository implementations
+3. ✅ `docs/week-13-lsp-reflection.md` answering:
+   - How did the shape lab prepare you for repository contracts?
+   - Which LSP red flag appeared in BOTH examples?
+   - What would break if FakeTaskRepository threw exceptions instead of returning null?
+
+---
+
+### Stage 3: Reflection & Connection (20 minutes)
+
+**LSP Red Flags (Now You Can Spot Them):**
+
+| Red Flag | Shape Example | TaskFlow Example |
+|----------|---------------|------------------|
+| Changed contract | Square altered width/height independence | Fake throws instead of returning null |
+| Strengthened preconditions | (Not in this lab) | Repository requires non-null entities when interface allows null |
+| Weakened postconditions | Square didn't deliver 5x10 rectangle | Fake doesn't populate navigation properties when Real does |
+| Threw unexpected exceptions | (Not in this lab) | Fake throws TaskNotFoundException when Real returns null |
+
+**Reflection Questions:**
+
+1. **Lab vs. Production:** "Why did we start with shapes instead of jumping straight to TaskRepository?"
+   - Answer: Shapes are instantly graspable. Once you SEE the bug in shapes, you understand WHY contracts matter in complex code.
+
+2. **Red Flag Spotting:** "Name another TaskFlow interface that worries you now. Which red flag might it trigger?"
+   - Think about: ITaskFilter, ITaskService, IValidator<T>
+
+3. **Real-World Impact:** "How would you explain LSP to a new team member in 2 sentences?"
+   - Your answer: [Write in docs/week-13-lsp-reflection.md]
+
+**Gamification:** After completing all stages, try the "Subtype Swap" challenge:
+- Swap FakeTaskRepository ↔ TaskRepository in TaskService
+- Run all tests
+- Document what breaks (if anything) - perfect LSP means NOTHING breaks!
+
+---
+
+**Deliverable:** All three stages completed, reflection documented
 ```
 
 **Rationale:**
-- Concrete example of LSP violation
-- Clear "before/after" contract documentation
-- Understand real cost of broken LSP (tests pass, production fails)
-- Motivation for contract tests
+- **Discovery learning:** Students experience the bug FIRST (shapes), then understand the principle
+- **Generic example:** Rectangle/Square is universally understood, no domain knowledge needed
+- **Memorable:** Debugging a failing test creates "aha!" moment that sticks
+- **Staged complexity:** Simple shapes (30min) → TaskFlow application (45min) → Reflection (20min)
+- **Theory AFTER practice:** Principle makes sense because they've FELT the pain of violation
+- **Addresses agent feedback:** Creates the narrative (Setup → Twist → Climax → Resolution)
 
-**Time Impact:** +15 minutes (essential foundation)
+**Time Impact:** +30 minutes total, but dramatically better retention and understanding
+
+**Pedagogical Research:** Based on constructivist learning (Piaget), discovery-based instruction (Bruner), and worked examples effect (Sweller). Students construct understanding through guided discovery rather than receiving pre-digested abstractions.
 
 ---
 
@@ -3659,3 +4074,111 @@ public async Task DeleteTask_CallsRepositoryDeleteAsync()
 **Document Status:** COMPLETE - All 23 weeks analyzed
 **Ready for:** Implementation by AI Agent
 **Last Updated:** 2025-01-18
+**Revision:** 2025-01-18 (Incorporated additional agent feedback)
+
+---
+
+## REVISION NOTES (Post-Evaluation Improvements)
+
+**Date:** 2025-01-18  
+**Source:** Cross-agent pedagogical review  
+**Changes Made:** 3 critical improvements based on discovery learning theory and junior developer feedback
+
+### IMPROVEMENT 1: Week 13 LSP - Discovery Lab Approach (MAJOR REVISION)
+**What Changed:**
+- **BEFORE:** Show TaskFlow anti-pattern → Provide templates → Implement contract tests
+- **AFTER:** Generic lab (Rectangle/Square) → Discover bug → Fix violation → THEN apply to TaskFlow
+
+**Why Superior:**
+- Discovery-based learning creates memorable "aha!" moment
+- Generic example (shapes) is universally graspable before domain complexity
+- Students EXPERIENCE the bug before learning the principle
+- Narrative arc: Setup → Twist → Climax → Resolution
+
+**Pedagogical Research Basis:**
+- Constructivist learning (Piaget): Students construct understanding through experience
+- Discovery-based instruction (Bruner): Principles learned through guided discovery stick better
+- Worked examples effect (Sweller): Show failure first, then solution
+
+**Impact:** This is pedagogically superior to my original approach. Students will remember LSP much better.
+
+---
+
+### IMPROVEMENT 2: Week 7 Encapsulation - Add `init` Setters Pattern
+**What Changed:**
+- Added modern C# 9+ `init` setters as recommended approach for juniors
+- Kept traditional `private set` + factory as alternative for complex validation
+
+**Why Important:**
+- `init` setters are simpler (less boilerplate) than traditional encapsulation
+- Works seamlessly with EF Core 5+ and seed data
+- Junior-friendly: clear immutability intent without complex factory patterns
+- Original evaluation missed this modern C# feature
+
+**Code Example Added:**
+```csharp
+public class TaskEntity
+{
+    public string Title { get; init; } = string.Empty;  // ⭐ Recommended
+    public bool IsCompleted { get; private set; }  // Methods can still modify
+    
+    public void Complete() { IsCompleted = true; }
+}
+```
+
+**Impact:** Reduces EF Core friction, simpler for juniors to understand.
+
+---
+
+### IMPROVEMENT 3: Week 10 Validation - FluentValidation DI Auto-Registration
+**What Changed:**
+- Added explicit explanation of FluentValidation DI auto-registration pattern
+- Showed `AddFluentValidation(config => ...)` pattern in Program.cs
+- Explained what happens "behind the scenes" when validators auto-run
+
+**Why Important:**
+- Original evaluation taught validation rules but not HOW validators get injected
+- Juniors confused by "framework magic" - needed demystification
+- Shows both auto-registration (recommended) and manual injection patterns
+
+**Code Example Added:**
+```csharp
+// In Program.cs:
+builder.Services.AddFluentValidation(config =>
+{
+    config.RegisterValidatorsFromAssemblyContaining<CreateTaskValidator>();
+    config.AutomaticValidationEnabled = true;
+});
+```
+
+**Impact:** Makes DI pattern explicit, removes confusion about validator injection.
+
+---
+
+### Summary of Revisions
+
+| Week | Change Type | Priority | Rationale |
+|------|-------------|----------|-----------|
+| 13 (LSP) | Major Revision | 🔴 CRITICAL | Discovery learning pedagogically superior |
+| 7 (Encapsulation) | Enhancement | 🟡 HIGH | Modern C# pattern simpler for juniors |
+| 10 (Validation) | Clarification | 🟡 HIGH | DI pattern not explicitly shown |
+
+**Total Recommendations Now:** 49 (was 46)  
+**Critical Tier 1:** 22 → 23 (added LSP lab)  
+**High-Value Tier 2:** 18 → 20 (added init setters + DI pattern)
+
+**Self-Critique Acknowledged:**
+My initial evaluation focused on reducing friction (templates, TODOs) but missed the deeper pedagogical principle of **discovery-based learning**. The other agent correctly identified that students remember principles better when they discover bugs themselves rather than being told about anti-patterns. This is a textbook application of constructivist learning theory that I should have applied to abstract principles like SOLID.
+
+**Lesson Learned:**
+For abstract concepts (SOLID, design patterns), always ask: "Can students discover this through a simple, memorable failure first?" Generic examples (Rectangle/Square, Payment processors) create stronger mental models than jumping straight to domain-specific applications.
+
+---
+
+## FINAL DOCUMENT STATUS
+**Status:** ✅ COMPLETE & REVISED  
+**Total Weeks:** 23  
+**Total Recommendations:** 49  
+**Pedagogical Basis:** Constructivist learning, discovery-based instruction, cognitive load theory  
+**Ready for:** Implementation by AI Agent  
+**Quality:** Production-ready curriculum evaluation with peer-reviewed improvements
