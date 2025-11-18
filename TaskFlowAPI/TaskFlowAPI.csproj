@@ -1,0 +1,61 @@
+<!--
+  This is the C# project file for our TaskFlowAPI.
+  It's an XML file that defines all the settings and configurations for the project.
+  The .NET build tools (like `dotnet build`) use this file to understand how to compile the project,
+  what its dependencies are, and what kind of output to produce.
+-->
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!-- 
+    The PropertyGroup contains high-level project settings.
+  -->
+  <PropertyGroup>
+    <!-- Specifies the target framework for the application. `net8.0` means we are using .NET 8. -->
+    <TargetFramework>net8.0</TargetFramework>
+    <!-- Enables nullable reference types. This helps prevent null reference exceptions by making the compiler warn you about potential nulls. -->
+    <Nullable>enable</Nullable>
+    <!-- Enables implicit global usings. The compiler will automatically generate a file with common `using` statements (like `System`, `System.Linq`, etc.) so you don't have to add them to every file. -->
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <!--
+    An ItemGroup is used to group together project items, such as package references or file includes.
+  -->
+  <ItemGroup>
+    <!-- 
+      Each `PackageReference` element represents a dependency on a NuGet package.
+      NuGet is the package manager for .NET. These lines tell the build tools to download and include these libraries in our project.
+      The `Version` attribute specifies the exact version of the package to use.
+    -->
+    
+    <!-- FluentValidation: For creating strongly-typed validation rules. -->
+    <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.1" />
+    
+    <!-- Support for OpenAPI (Swagger) documentation. -->
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.21" />
+
+    <!-- Middleware for compressing HTTP responses. -->
+    <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="2.3.0" />
+
+    <!-- 
+      Entity Framework Core design-time tools. 
+      This is needed for commands like `dotnet ef migrations add`.
+      The `PrivateAssets` and `IncludeAssets` tags control how this dependency is used and published.
+      `PrivateAssets="all"` means this package is only for development and won't be published with the final application.
+    -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.10">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    
+    <!-- The EF Core database provider for SQLite. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.10" />
+    
+    <!-- Serilog: A structured logging library for .NET. -->
+    <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
+    
+    <!-- Swashbuckle: The library that generates the Swagger UI for our API. -->
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+  </ItemGroup>
+
+</Project>

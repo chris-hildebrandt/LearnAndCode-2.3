@@ -1,0 +1,20 @@
+# This file is a `.http` file, which allows you to define and send HTTP requests directly from your code editor.
+# It's commonly used with extensions like the "REST Client" in Visual Studio Code.
+# This provides a simple, version-controllable way to test your API endpoints without needing a separate tool like Postman.
+
+# This line defines a variable that can be reused in subsequent requests.
+# This is useful for storing the base address of your API.
+@TaskFlowAPI_HostAddress = https://localhost:5001
+
+# The `###` separator is used to distinguish between different requests in the same file.
+
+### Week 1 sanity check: GET all tasks (returns 500 until Week 9 implementation)
+
+# This defines an HTTP GET request.
+# `{{TaskFlowAPI_HostAddress}}` is syntax for using the variable defined above.
+# The full URL for this request will be `https://localhost:5001/api/tasks`.
+GET {{TaskFlowAPI_HostAddress}}/api/tasks
+# This is an HTTP header, indicating that the client expects to receive a JSON response.
+Accept: application/json
+
+### Week 4 TODO: Add requests for PUT/DELETE once endpoints exist

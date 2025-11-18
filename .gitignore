@@ -1,0 +1,11 @@
+.idea/
+bin/
+obj/
+TaskFlowAPI/taskflow.db
+*.user
+*.suo
+*.cache
+.vs/
+TestResults/
+coverage/
+*.lcov
