@@ -85,7 +85,112 @@ dotnet test TaskFlowAPI.sln
 - 15 min – Test + PR/issue.
 **Total:** ~120 minutes.
 
-## 11. Additional Resources
+## 11. Scaffolding & Templates
+
+### TODO Comments (Add to ITaskRepository.cs):
+
+```csharp
+namespace TaskFlowAPI.Repositories.Interfaces;
+
+// TODO Week 14: This interface violates ISP - it forces clients to depend on methods they don't use
+// TODO: Create ITaskReader interface with read-only methods (GetAllAsync, GetByIdAsync)
+// TODO: Create ITaskWriter interface with write-only methods (CreateAsync, UpdateAsync, DeleteAsync)
+// TODO: Update TaskRepository to implement both ITaskReader and ITaskWriter
+
+public interface ITaskRepository
+{
+    Task<List<TaskEntity>> GetAllAsync();        // Read
+    Task<TaskEntity?> GetByIdAsync(int id);      // Read
+    Task<TaskEntity> CreateAsync(TaskEntity e);  // Write
+    Task UpdateAsync(TaskEntity entity);         // Write
+    Task DeleteAsync(TaskEntity entity);         // Write
+}
+```
+
+### Template: ITaskReader.cs
+
+```csharp
+namespace TaskFlowAPI.Repositories.Interfaces;
+
+/// <summary>
+/// Read-only operations for querying tasks.
+/// Use for: Reports, dashboards, query services, read-only APIs
+/// </summary>
+public interface ITaskReader
+{
+    Task<List<TaskEntity>> GetAllAsync();
+    Task<TaskEntity?> GetByIdAsync(int id);
+}
+```
+
+### Template: ITaskWriter.cs
+
+```csharp
+namespace TaskFlowAPI.Repositories.Interfaces;
+
+/// <summary>
+/// Write operations for modifying tasks.
+/// Use for: Create/Update/Delete services, import jobs, admin operations
+/// </summary>
+public interface ITaskWriter
+{
+    Task<TaskEntity> CreateAsync(TaskEntity entity);
+    Task UpdateAsync(TaskEntity entity);
+    Task DeleteAsync(TaskEntity entity);
+}
+```
+
+### Registering One Class as Two Interfaces
+
+In `Program.cs` or `ServiceCollectionExtensions.cs`:
+
+```csharp
+// Register concrete class once
+builder.Services.AddScoped<TaskRepository>();
+
+// Register as ITaskReader (factory delegates to same instance)
+builder.Services.AddScoped<ITaskReader>(sp => 
+    sp.GetRequiredService<TaskRepository>());
+
+// Register as ITaskWriter (factory delegates to same instance)
+builder.Services.AddScoped<ITaskWriter>(sp => 
+    sp.GetRequiredService<TaskRepository>());
+```
+
+**Why this pattern?**
+
+1. **One concrete instance** (efficient) - Only one `TaskRepository` object created per scope
+2. **Two interface registrations** (flexible) - Clients can request either `ITaskReader` or `ITaskWriter`
+3. **Factory delegation** - Both interfaces resolve to the same underlying `TaskRepository` instance
+
+**How it works:**
+
+```csharp
+// When TaskService requests both interfaces:
+public class TaskService
+{
+    public TaskService(ITaskReader reader, ITaskWriter writer)
+    {
+        // Both parameters reference THE SAME TaskRepository instance
+        // reader == writer (in terms of object identity)
+    }
+}
+
+// DI container flow:
+// 1. Create ONE TaskRepository instance (scoped)
+// 2. When ITaskReader requested → return that instance
+// 3. When ITaskWriter requested → return that same instance
+// Result: Both injections point to same object
+```
+
+### Benefits:
+
+- Clients only depend on methods they use
+- Easy to test (mock only needed interface)
+- Can swap implementations per interface later (advanced)
+- Clear separation of concerns
+
+## 12. Additional Resources
 
 - **[Interface Segregation Example](../Examples/InterfaceSegregation.cs)**
 - **[Interface Segregation in TypeScript - LinkedIn](https://www.linkedin.com/pulse/interface-segregation-principle-typescript-dhananjay-kumar)** - Modern implementation with TypeScript.

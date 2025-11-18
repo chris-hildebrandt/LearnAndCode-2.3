@@ -97,7 +97,218 @@ dotnet test TaskFlowAPI.sln
 - 15 min – Swagger verification + PR/issue.
 **Total:** ~120 minutes.
 
-## 11. Additional Resources
+## 11. Configuration Examples
+
+### Step 3: Configure API Versioning
+
+In `Program.cs`, add after `AddControllers()`:
+
+```csharp
+// Install package first (if not already installed):
+// dotnet add package Microsoft.AspNetCore.Mvc.Versioning
+
+builder.Services.AddApiVersioning(options =>
+{
+    options.DefaultApiVersion = new ApiVersion(1, 0);
+    options.AssumeDefaultVersionWhenUnspecified = true;
+    options.ReportApiVersions = true;  // Adds "api-supported-versions" header to responses
+});
+```
+
+**Update Controller Route:**
+
+```csharp
+[ApiController]
+[Route("api/v{version:apiVersion}/[controller]")]
+[ApiVersion("1.0")]
+public class TasksController : ControllerBase
+{
+    // ... endpoints
+}
+```
+
+### Step 7: Configure Swagger for XML Comments
+
+**1. Enable XML documentation in .csproj:**
+
+```xml
+<PropertyGroup>
+  <TargetFramework>net8.0</TargetFramework>
+  <Nullable>enable</Nullable>
+  <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  <NoWarn>$(NoWarn);1591</NoWarn> <!-- Suppress warning for missing XML comments -->
+</PropertyGroup>
+```
+
+**2. Update AddSwaggerGen() in Program.cs:**
+
+```csharp
+using System.Reflection;
+
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo 
+    { 
+        Title = "TaskFlow API",
+        Version = "v1",
+        Description = "Task management API for Learn and Code curriculum"
+    });
+    
+    // Include XML comments
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    c.IncludeXmlComments(xmlPath);
+});
+```
+
+**3. Add XML comments to controllers:**
+
+```csharp
+/// <summary>
+/// Retrieves all tasks with optional filtering and pagination
+/// </summary>
+/// <param name="page">Page number (default: 1)</param>
+/// <param name="pageSize">Items per page (default: 20, max: 100)</param>
+/// <param name="status">Filter by completion status</param>
+/// <returns>Paged list of tasks</returns>
+/// <response code="200">Returns the paged task list</response>
+/// <response code="400">Invalid pagination parameters</response>
+[HttpGet]
+[ProducesResponseType(typeof(PagedResponse<TaskDto>), StatusCodes.Status200OK)]
+[ProducesResponseType(StatusCodes.Status400BadRequest)]
+public async Task<ActionResult<PagedResponse<TaskDto>>> GetTasks(
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 20,
+    [FromQuery] bool? status = null)
+{
+    // Implementation
+}
+```
+
+### Pagination Defaults (Industry Standards)
+
+```csharp
+public class PaginationParams
+{
+    private const int MaxPageSize = 100;
+    private int _pageSize = 20;  // Default: 20 items per page
+    
+    /// <summary>
+    /// Page number (1-based). Default: 1
+    /// </summary>
+    public int Page { get; set; } = 1;
+    
+    /// <summary>
+    /// Items per page. Default: 20, Max: 100
+    /// </summary>
+    public int PageSize
+    {
+        get => _pageSize;
+        set => _pageSize = (value > MaxPageSize) ? MaxPageSize : value;
+    }
+}
+```
+
+**Why these defaults?**
+
+- **Default page size: 20** - Balances data transfer vs number of requests
+- **Maximum page size: 100** - Prevents abuse and performance issues
+- **Default page: 1** - Intuitive for most users (first page)
+- **Validation:** page >= 1, pageSize >= 1 && pageSize <= max
+
+**Validation example:**
+
+```csharp
+public async Task<ActionResult<PagedResponse<TaskDto>>> GetTasks(
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 20)
+{
+    if (page < 1)
+        return BadRequest("Page must be >= 1");
+        
+    if (pageSize < 1 || pageSize > 100)
+        return BadRequest("PageSize must be between 1 and 100");
+    
+    // ... pagination logic
+}
+```
+
+### PagedResponse Template
+
+```csharp
+namespace TaskFlowAPI.DTOs.Responses;
+
+/// <summary>
+/// Generic paged response wrapper
+/// </summary>
+public class PagedResponse<T>
+{
+    /// <summary>
+    /// Current page number (1-based)
+    /// </summary>
+    public int Page { get; set; }
+    
+    /// <summary>
+    /// Items per page
+    /// </summary>
+    public int PageSize { get; set; }
+    
+    /// <summary>
+    /// Total number of items across all pages
+    /// </summary>
+    public int TotalCount { get; set; }
+    
+    /// <summary>
+    /// Total number of pages
+    /// </summary>
+    public int TotalPages => (int)Math.Ceiling(TotalCount / (double)PageSize);
+    
+    /// <summary>
+    /// Items on current page
+    /// </summary>
+    public List<T> Data { get; set; } = new();
+    
+    /// <summary>
+    /// Whether there is a next page
+    /// </summary>
+    public bool HasNextPage => Page < TotalPages;
+    
+    /// <summary>
+    /// Whether there is a previous page
+    /// </summary>
+    public bool HasPreviousPage => Page > 1;
+}
+```
+
+### Pagination Implementation Example
+
+```csharp
+public async Task<PagedResponse<TaskDto>> GetAllTasksAsync(int page, int pageSize)
+{
+    var query = _context.Tasks.AsQueryable();
+    
+    // Get total count before pagination
+    var totalCount = await query.CountAsync();
+    
+    // Apply pagination
+    var tasks = await query
+        .Skip((page - 1) * pageSize)
+        .Take(pageSize)
+        .ToListAsync();
+    
+    var dtos = tasks.Select(t => _mapper.ToDto(t)).ToList();
+    
+    return new PagedResponse<TaskDto>
+    {
+        Page = page,
+        PageSize = pageSize,
+        TotalCount = totalCount,
+        Data = dtos
+    };
+}
+```
+
+## 12. Additional Resources
 
 - **[Documentation Example](../Examples/Documentation.md)**
 
