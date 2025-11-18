@@ -52,6 +52,10 @@
 - Week 17: Section numbering conflict
 - Week 23: Section numbering conflict
 
+**Major New Tasks Added:**
+- Code Smells Easter Eggs (8-12 hours) - Add intentional smells for Week 18
+- Architecture Diagrams (6-8 hours) - Create comprehensive visual documentation
+
 ### Issues Already Resolved (From Other Assessments)
 
 **✅ Week 1 Setup Issues** - ALREADY FIXED
@@ -171,7 +175,311 @@
 
 ## Actionable Roadmap
 
+### Major New Tasks (High Priority)
+
+#### Task A: Code Smells Easter Eggs Implementation
+**Status:** Not Started  
+**Effort:** 8-12 hours  
+**Priority:** High  
+**Dependencies:** None  
+**Deliverables:**
+- 20-25 intentional code smells added to TaskFlowAPI
+- Code smells catalog document
+- Updated Week 18 assignment
+
+#### Task B: Architecture Diagrams Creation
+**Status:** Not Started  
+**Effort:** 6-8 hours  
+**Priority:** High  
+**Dependencies:** None  
+**Deliverables:**
+- 6+ Mermaid UML diagrams
+- Integrated documentation
+- Week 1 architecture overview update
+
 ### Immediate Actions (Must Fix)
+
+#### Action 0: Add Code Smells Easter Eggs to TaskFlowAPI (NEW - Major Task)
+
+**Purpose:** Create intentional code smells throughout TaskFlowAPI as "easter eggs" for Week 18 students to find and fix. This provides concrete, contextual examples of Clean Code Chapter 17 smells in the actual codebase they're working with.
+
+**Effort:** 8-12 hours (major task)
+**Priority:** High (significantly improves Week 18 learning experience)
+**Impact:** Transforms Week 18 from abstract to concrete, provides measurable learning outcomes
+
+**Detailed Implementation Guide:** See `FINAL-REPORT/code-smells-easter-eggs-implementation-guide.md`
+
+**Implementation Steps:**
+
+1. **Read Clean Code Chapter 17: Smells and Heuristics** (1 hour)
+   - Document all smells mentioned in the chapter
+   - Categorize by type (methods, classes, data, etc.)
+   - Identify which smells can be safely added without breaking functionality
+
+2. **Create Code Smells Inventory** (1 hour)
+   - List all smells from Chapter 17
+   - Map each to potential locations in TaskFlowAPI
+   - Prioritize smells that are:
+     - Easy to identify
+     - Safe to add (won't break functionality)
+     - Educational (teach important concepts)
+     - Fixable by students in Week 18
+
+3. **Add Intentional Smells to TaskFlowAPI** (6-8 hours)
+   - Add smells throughout the codebase with comments like:
+     ```csharp
+     // CODE SMELL: Long Method (Clean Code Ch 17)
+     // This method violates the "functions should be small" principle.
+     // It does multiple things: validation, calculation, formatting, and persistence.
+     // Refactor by extracting smaller methods with single responsibilities.
+     public async Task<ActionResult> ProcessTaskReport(int projectId)
+     {
+         // 50+ lines of mixed concerns...
+     }
+     ```
+   - Target locations:
+     - Controllers (long methods, too many parameters)
+     - Services (duplicate code, long methods, feature envy)
+     - Repositories (data clumps, primitive obsession)
+     - Validators (long parameter lists, switch statements)
+     - Tests (duplicate code, obscure tests)
+     - DTOs (data clumps, primitive obsession)
+
+4. **Create Smell Catalog Document** (1 hour)
+   - Document each smell added:
+     - Location (file, method/class name)
+     - Smell type (from Chapter 17)
+     - Why it's bad
+     - Suggested refactoring approach
+     - Difficulty level (easy/medium/hard)
+
+5. **Update Week 18 Assignment** (1 hour)
+   - Add "Code Smell Scavenger Hunt" section
+   - List target number of smells to find (e.g., "Find and fix 5 of the 12 intentional smells")
+   - Provide smell checklist
+   - Reference the smell catalog document
+
+**Target Smells to Add (from Chapter 17):**
+
+**Method-Level Smells:**
+- Long Method (3-4 instances)
+- Long Parameter List (2-3 instances)
+- Feature Envy (1-2 instances)
+- Data Clumps (2-3 instances)
+- Primitive Obsession (2-3 instances)
+- Switch Statements (1-2 instances)
+
+**Class-Level Smells:**
+- Large Class (1 instance - maybe a helper class)
+- Data Class (1-2 instances - DTOs that could have behavior)
+- Lazy Class (1 instance)
+
+**General Smells:**
+- Duplicate Code (3-4 instances)
+- Dead Code (1-2 instances)
+- Speculative Generality (1 instance)
+- Comments (bad comments - 2-3 instances)
+
+**Total Target:** 20-25 intentional smells distributed across the codebase
+
+**Example Implementation:**
+
+```csharp
+// In TaskService.cs
+// CODE SMELL: Long Method (Clean Code Ch 17, p. 288)
+// This method is 45 lines and does multiple things:
+// 1. Validates request
+// 2. Calculates default values
+// 3. Creates entity
+// 4. Saves to database
+// 5. Maps to DTO
+// 6. Logs result
+// Refactor by extracting smaller methods (Extract Method pattern).
+public async Task<TaskDto> CreateTaskAsync(CreateTaskRequest request, CancellationToken ct)
+{
+    // Long implementation with multiple responsibilities...
+}
+
+// CODE SMELL: Duplicate Code (Clean Code Ch 17, p. 289)
+// This validation pattern appears in 3 other methods.
+// Extract to a shared validation method to follow DRY principle.
+private void ValidateTaskRequest(CreateTaskRequest request)
+{
+    if (string.IsNullOrWhiteSpace(request.Title))
+        throw new ArgumentException("Title required");
+    // ... same validation logic repeated elsewhere
+}
+```
+
+**Files to Modify:**
+- `TaskFlowAPI/Controllers/TasksController.cs` - Add 3-4 smells
+- `TaskFlowAPI/Controllers/ReportsController.cs` - Add 2-3 smells
+- `TaskFlowAPI/Services/Tasks/TaskService.cs` - Add 4-5 smells
+- `TaskFlowAPI/Repositories/TaskRepository.cs` - Add 2-3 smells
+- `TaskFlowAPI/Validators/*.cs` - Add 2-3 smells
+- `TaskFlowAPI/DTOs/*.cs` - Add 1-2 smells
+- `TaskFlowAPI.Tests/Unit/*.cs` - Add 2-3 smells
+- `docs/code-smells-catalog.md` (NEW) - Document all smells
+- `Course-Materials/Weekly-Modules/week-18-code-smells-refactoring.md` - Update assignment
+
+**Success Criteria:**
+- ✅ 20-25 intentional smells added across codebase
+- ✅ Each smell has explanatory comment with Chapter 17 reference
+- ✅ All smells are fixable by students in Week 18
+- ✅ No functionality broken (all tests still pass)
+- ✅ Smell catalog document created
+- ✅ Week 18 assignment updated with scavenger hunt
+
+**Pedagogical Value:**
+- Students see real smells in context (not abstract examples)
+- Provides measurable learning outcomes (find X of Y smells)
+- Builds pattern recognition skills
+- Creates "aha!" moments when students identify smells
+- Makes Week 18 concrete and actionable
+
+---
+
+#### Action 0.5: Create Comprehensive Architecture Diagrams (NEW - Major Task)
+
+**Purpose:** Create visual diagrams (Mermaid UML preferred) showing TaskFlowAPI's architecture at different stages to help students understand the codebase structure and evolution.
+
+**Effort:** 6-8 hours (major task)
+**Priority:** High (significantly improves student understanding)
+**Impact:** Reduces cognitive load, improves navigation, shows architecture evolution
+
+**Detailed Implementation Guide:** See `FINAL-REPORT/architecture-diagrams-implementation-guide.md`
+
+**Implementation Steps:**
+
+1. **Create Current State Architecture Diagram** (2 hours)
+   - Mermaid UML class diagram showing:
+     - Controllers and their dependencies
+     - Services and interfaces
+     - Repositories and interfaces
+     - Entities and relationships
+     - DTOs
+     - Validators
+     - Infrastructure abstractions
+   - Include dependency arrows
+   - Color-code by layer (Controllers, Services, Data, etc.)
+
+2. **Create Future State Architecture Diagram** (2 hours)
+   - Show architecture after all 23 weeks
+     - All SOLID principles applied
+     - Design patterns in place
+     - Complete separation of concerns
+   - Highlight what changes from current to future
+
+3. **Create Data Flow Diagrams** (1 hour)
+   - Request flow: Controller → Service → Repository → Database
+   - Response flow: Database → Repository → Service → Controller → Client
+   - Error flow: Exception → Middleware → ProblemDetails → Client
+
+4. **Create Sequence Diagrams** (1 hour)
+   - Create Task flow (POST /api/tasks)
+   - Get All Tasks flow (GET /api/tasks)
+   - Update Task flow (PUT /api/tasks/{id})
+   - Show interactions between components
+
+5. **Create Component Interaction Diagram** (1 hour)
+   - Show how filters, validators, mappers, factories interact
+   - Dependency injection relationships
+   - Strategy pattern usage
+
+6. **Integrate Diagrams into Documentation** (1 hour)
+   - Add to `TaskFlowAPI/README.md`
+   - Add to `Course-Materials/Project-Documentation/`
+   - Reference in appropriate weekly modules
+   - Add to Week 1 (architecture overview)
+
+**Diagram Types to Create:**
+
+1. **Class Diagram (Current State)** - Mermaid UML
+   - All classes, interfaces, relationships
+   - Dependency arrows
+   - Layer grouping
+
+2. **Class Diagram (Future State)** - Mermaid UML
+   - Complete architecture after Week 23
+   - All patterns applied
+   - Clean boundaries
+
+3. **Data Flow Diagram** - Mermaid flowchart
+   - Request/response flows
+   - Error handling flows
+
+4. **Sequence Diagram** - Mermaid sequence diagram
+   - Key operations (Create, Read, Update, Delete)
+   - Component interactions
+
+5. **Component Diagram** - Mermaid graph
+   - High-level component relationships
+   - Dependency injection flow
+
+6. **Architecture Evolution Timeline** - Mermaid gantt or flowchart
+   - Show how architecture changes week by week
+   - Key milestones (Week 8: Repository, Week 9: Service, etc.)
+
+**Example Mermaid Diagram Structure:**
+
+```mermaid
+classDiagram
+    class TasksController {
+        -ITaskService _taskService
+        +GetAllTasksAsync()
+        +GetTaskByIdAsync()
+        +CreateTaskAsync()
+    }
+    
+    class ITaskService {
+        <<interface>>
+        +GetAllTasksAsync()
+        +GetTaskByIdAsync()
+        +CreateTaskAsync()
+    }
+    
+    class TaskService {
+        -ITaskReader _taskReader
+        -ITaskWriter _taskWriter
+        -ITaskFactory _taskFactory
+        +GetAllTasksAsync()
+    }
+    
+    TasksController --> ITaskService
+    TaskService ..|> ITaskService
+    TaskService --> ITaskReader
+    TaskService --> ITaskWriter
+```
+
+**Files to Create/Modify:**
+- `docs/architecture/current-state-class-diagram.md` (NEW)
+- `docs/architecture/future-state-class-diagram.md` (NEW)
+- `docs/architecture/data-flow-diagram.md` (NEW)
+- `docs/architecture/sequence-diagrams.md` (NEW)
+- `docs/architecture/component-diagram.md` (NEW)
+- `docs/architecture/evolution-timeline.md` (NEW)
+- `TaskFlowAPI/README.md` - Add diagram references
+- `Course-Materials/Project-Documentation/TaskFlowAPI_Current_State.md` - Add diagrams
+- `Course-Materials/Project-Documentation/TaskFlowAPI_Future_State.md` - Add diagrams
+- `Course-Materials/Weekly-Modules/week-01-introduction.md` - Reference architecture diagrams
+
+**Success Criteria:**
+- ✅ 6+ comprehensive diagrams created
+- ✅ All diagrams use Mermaid (renderable in GitHub/Markdown)
+- ✅ Diagrams accurately represent codebase structure
+- ✅ Diagrams integrated into documentation
+- ✅ Diagrams referenced in appropriate weekly modules
+- ✅ Diagrams help students understand architecture
+
+**Pedagogical Value:**
+- Visual learners benefit from diagrams
+- Reduces cognitive load (see structure at a glance)
+- Shows relationships between components
+- Demonstrates architecture evolution
+- Helps students navigate large codebase
+- Professional documentation practice
+
+---
 
 #### Action 1: Add SRP Smell Detector Framework to Week 11
 **File:** `Course-Materials/Weekly-Modules/week-11-single-responsibility.md`  
@@ -1339,6 +1647,11 @@ The TaskFlowAPI curriculum is **96% complete** and demonstrates **excellent qual
 - 4 minor fixes (section numbering, SRP framework detail)
 - Estimated time: ~1.5 hours
 
+**Major new tasks:**
+- Code Smells Easter Eggs implementation
+- Architecture diagrams creation
+- Estimated time: ~14-20 hours
+
 **Optional enhancements:**
 - 5 additional frameworks/examples for consistency
 - Estimated time: ~4-5 hours
@@ -1427,14 +1740,25 @@ The TaskFlowAPI curriculum is **96% complete** and demonstrates **excellent qual
    - Fix section numbering (Weeks 12, 17, 23)
    - Add SRP Smell Detector detail (Week 11)
 
-2. **Short-term:** Consider Priority 2 enhancements (4-5 hours)
-   - Week 18: Add more concrete smell examples
+2. **High Priority:** Implement Major New Tasks (14-20 hours)
+   - **Task A:** Code Smells Easter Eggs (8-12 hours)
+     - Read Clean Code Chapter 17
+     - Add 20-25 intentional smells to TaskFlowAPI
+     - Create smell catalog document
+     - Update Week 18 assignment
+   - **Task B:** Architecture Diagrams (6-8 hours)
+     - Create 6+ Mermaid UML diagrams
+     - Integrate into documentation
+     - Update Week 1 with architecture overview
+
+3. **Short-term:** Consider Priority 2 enhancements (4-5 hours)
+   - Week 18: Add more concrete smell examples (if needed after Task A)
    - Week 22: Expand caching examples
    - Other consistency improvements
 
-3. **Ongoing:** Monitor student feedback and adjust as needed
+4. **Ongoing:** Monitor student feedback and adjust as needed
 
-4. **Future:** Consider adding cross-week reference system and portfolio milestone tracking
+5. **Future:** Consider adding cross-week reference system and portfolio milestone tracking
 
 ---
 
@@ -1442,4 +1766,8 @@ The TaskFlowAPI curriculum is **96% complete** and demonstrates **excellent qual
 **Ready for Implementation:** ✅ Yes  
 **Approval Required:** ⚠️ Review recommended before implementation
 
-**Key Takeaway:** The curriculum is in excellent shape. Most issues from previous assessments have been resolved. Only minor fixes remain.
+**Key Takeaway:** The curriculum is in excellent shape. Most issues from previous assessments have been resolved. Two major new tasks have been added (Code Smells Easter Eggs and Architecture Diagrams) with detailed implementation guides. Only minor fixes remain.
+
+**Implementation Guides Created:**
+- `FINAL-REPORT/code-smells-easter-eggs-implementation-guide.md` - Complete guide for adding intentional smells
+- `FINAL-REPORT/architecture-diagrams-implementation-guide.md` - Complete guide for creating diagrams
