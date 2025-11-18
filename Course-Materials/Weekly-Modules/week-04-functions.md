@@ -58,12 +58,14 @@ You should be able to extract at least **five** distinct helper methods.
 
 ## 5. Step-by-Step Instructions
 
+### Core Assignment (Required): Refactor GenerateProjectSummaryReport
+
 1.  Create a new branch for your work: `week-04/<your-name>`.
-2.  Locate and read the `GenerateProjectSummaryReport` method in `TaskFlowAPI/Controllers/ReportsController.cs`.
-3.  Identify the distinct logical operations within the function. Use comments to mentally block them out first (e.g., `// Filter tasks`, `// Calculate stats`).
-4.  Extract the first logical block into a new private method. Choose a descriptive name that clearly states what the method does (e.g., `FilterTasksByProjectId`).
-5.  Replace the original code block with a call to your new method.
-6.  Repeat this process for the other logical blocks. Aim for at least five extractions. Examples of methods you might create:
+2.  **NEW:** Complete Method Extraction Decision Framework (see Section 11 below) - 10 minutes
+3.  Locate and read the `GenerateProjectSummaryReport` method in `TaskFlowAPI/Controllers/ReportsController.cs`.
+4.  **REVISED:** Apply extraction framework to identify candidates (comment blocks, scores, order)
+5.  Extract methods in CORRECT ORDER (lowest-level operations first, then coordinators)
+6.  Examples of methods you might create:
     -   `FilterTasksByProject(IEnumerable<TaskDto> allTasks, int projectId)`
     -   `CalculateCompletionPercentage(IEnumerable<TaskDto> projectTasks)`
     -   `CountOverdueTasks(IEnumerable<TaskDto> projectTasks)`
@@ -71,10 +73,18 @@ You should be able to extract at least **five** distinct helper methods.
     -   `AssembleSummaryDto(...)`
 7.  Review your final `GenerateProjectSummaryReport` method. It should now be very short and read like a high-level summary of the steps involved in generating the report.
 8.  Ensure the code still builds and runs.
-9. Add `UpdateTaskAsync`/`DeleteTaskAsync` to the service interface and adjust constructor DI parameters after Week 2 renames.
-10. Implement `PUT` and `DELETE` endpoints following HTTP semantics and returning appropriate status codes.
-11. Ensure helper names articulate intent (e.g., `CreateNotFoundResponse` vs. `Handle404`).
-12. Run build/tests.
+9.  **NEW:** Compare your refactor with example (see Section 12 below)
+
+### Extension (OPTIONAL - if time permits): Add UPDATE/DELETE Endpoints
+
+**Why Optional:**
+This week's learning objective is FUNCTION EXTRACTION. Adding new endpoints is a different skill (API design, HTTP semantics). If you're still learning function refactoring, focus there. You can always add UPDATE/DELETE later.
+
+**If you choose to do extension:**
+10. Add `UpdateTaskAsync`/`DeleteTaskAsync` to `ITaskService` interface
+11. Implement `PUT /api/tasks/{id}` and `DELETE /api/tasks/{id}` controller actions
+12. Leave service implementation as `NotImplementedException` (will implement in Week 9)
+13. Ensure endpoint names follow HTTP conventions
 
 ## 6. How to Test
 
@@ -103,11 +113,18 @@ The endpoint should return a JSON summary that looks something like this:
 
 ## 7. Success Criteria
 
+**Core Assignment (Required):**
 - The `GenerateProjectSummaryReport` method is refactored to be no more than 15 lines long.
 - At least five private helper methods have been extracted from the original function.
 - Each new helper method has a clear, descriptive name that reveals its intent.
 - The `GenerateProjectSummaryReport` method now acts as a coordinator, and its body follows the Stepdown Rule.
 - The API builds successfully and the `/api/Reports/project-summary/{projectId}` endpoint functions as it did before the refactor.
+- **NEW:** Decision matrix completed and committed before refactoring
+
+**Optional Extension (if completed):**
+- UPDATE/DELETE endpoints added to controller
+- Service interface extended with method signatures
+- Service methods throw `NotImplementedException` (will implement Week 9)
 
 ## 8. Submission Process
 
@@ -131,12 +148,218 @@ The endpoint should return a JSON summary that looks something like this:
 
 ## 10. Time Estimate
 
+**Core Assignment:**
 - 45 min – Reading & planning the refactor.
-- 45 min – Implementing the refactoring by extracting methods.
+- 10 min – Method Extraction Decision Framework (NEW)
+- 50 min – Implementing the refactoring by extracting methods (increased for systematic approach)
+- 10 min – Compare with example (NEW)
 - 20 min – Testing and creating the pull request.
-**Total:** ~110 minutes.
+**Core Total:** ~2 hours 15 minutes
 
-## 11. Additional Resources
+**Optional Extension:**
+- 30 min – Add UPDATE/DELETE endpoints (interface + controller stubs)
+
+**Maximum Total (with extension):** ~2 hours 45 minutes
+
+## 11. Method Extraction Decision Framework (NEW - Pre-Refactoring)
+
+**Goal:** Extract systematically, not randomly
+
+**Time:** 10 minutes
+
+**Instructions:** Create `docs/week-04-extraction-plan.md` before coding
+
+### Step 1: Identify Extraction Candidates
+
+Read through `GenerateProjectSummaryReport`. Highlight blocks that:
+1. Have a comment describing what they do (`// Calculate statistics`)
+2. Could be described in 3-4 words (`FilterTasksByProject`)
+3. Repeat a pattern (multiple similar operations)
+4. Are indented ≥2 levels (nested logic)
+5. Would make sense in isolation (don't reference variables from 20 lines earlier)
+
+### Step 2: Decision Matrix
+
+For EACH candidate block, score 1-3 (3 = definitely extract):
+
+| Block Description | Lines | Has Descriptive Name? | Reusable? | Testable Alone? | Total Score |
+|-------------------|-------|----------------------|-----------|-----------------|-------------|
+| Filter tasks by project | 8 | Yes ("FilterTasksByProject") | Maybe | Yes | 2+2+2 = 6 |
+| Count completed tasks | 6 | Yes | Likely | Yes | 2+2+3 = 7 |
+| Calculate percentage | 5 | Yes | Likely | Yes | 2+2+3 = 7 |
+| Find next deadline | 10 | Yes | Maybe | Yes | 2+2+2 = 6 |
+| Validate projectId | 3 | Yes | No | Yes | 2+1+2 = 5 |
+| (add your findings) | | | | | |
+
+**Scoring:**
+- **Has Descriptive Name:** Can you describe it in 3-4 words? (Yes=2, No=0)
+- **Reusable:** Might another method use this? (Likely=3, Maybe=2, No=1)
+- **Testable Alone:** Can you test without full context? (Yes=3, Partial=2, No=1)
+
+**Extract if score ≥ 6**
+
+### Step 3: Extraction Order (CRITICAL)
+
+Extract in this order to avoid compiler errors:
+
+1. **Lowest-level operations first** (leaf nodes) - no dependencies on other candidates
+2. **Then mid-level** - may call low-level methods
+3. **Finally top-level coordinator** - calls everything
+
+**Example:**
+```csharp
+// BAD ORDER - won't compile:
+private ProjectSummaryDto AssembleSummary(...)  // calls CountCompleted which doesn't exist yet
+{
+    var completed = CountCompleted(tasks);  // ERROR: method not found
+}
+
+private int CountCompleted(List<TaskDto> tasks) { ... }  // defined AFTER usage
+
+// GOOD ORDER:
+// 1. FIRST: Extract lowest-level (no dependencies)
+private int CountCompleted(List<TaskDto> tasks) { ... }
+private int CountOverdue(List<TaskDto> tasks) { ... }
+private DateTime? FindNextDeadline(List<TaskDto> tasks) { ... }
+
+// 2. THEN: Extract mid-level (calls low-level)
+private double CalculatePercentage(int completed, int total) { ... }
+
+// 3. FINALLY: Extract coordinator (calls everything)
+private ProjectSummaryDto AssembleSummary(
+    List<TaskDto> tasks,
+    int projectId,
+    string projectName)
+{
+    var completed = CountCompleted(tasks);  // ✓ exists now!
+    var overdue = CountOverdue(tasks);
+    var percentage = CalculatePercentage(completed, tasks.Count);
+    var nextDeadline = FindNextDeadline(tasks);
+    
+    return new ProjectSummaryDto { ... };
+}
+```
+
+**Your Extraction Order:**
+1. _____________ (leaf)
+2. _____________ (leaf)
+3. _____________ (leaf)
+4. _____________ (mid-level, uses above)
+5. _____________ (coordinator, uses all)
+
+### Step 4: "Too Far" Boundary
+
+**Don't extract if:**
+- Method would be ≤ 2 lines
+- Name would be longer than code (`GetProjectIdFromRequest()` for `var id = request.ProjectId`)
+- Only used once AND doesn't improve clarity
+- Introduces more parameters than it removes
+
+**Examples:**
+```csharp
+// ❌ TOO FAR - extraction adds no value
+private int GetProjectId(ProjectSummaryRequest request)
+{
+    return request.ProjectId;  // Just return a property - don't extract
+}
+
+// ✓ GOOD - extraction clarifies logic
+private bool IsTaskOverdue(TaskDto task)
+{
+    return !task.IsCompleted && 
+           task.DueDate.HasValue && 
+           task.DueDate.Value < DateTime.UtcNow;
+}
+```
+
+### Deliverable
+
+Commit `docs/week-04-extraction-plan.md` with:
+- Candidate list with scores
+- Extraction order (numbered 1-5+)
+- Any "too far" candidates you decided NOT to extract
+
+**Why This Matters:**
+- Systematic refactoring (not random)
+- Understand trade-offs (extraction has costs)
+- Avoid compiler errors (extraction order)
+- Build habit of planning before coding
+
+---
+
+## 12. Example Refactor Comparison (NEW - Post-Refactoring)
+
+**Goal:** Self-assess your refactoring quality
+
+**Time:** 10 minutes
+
+**Instructions:** After completing your refactor, compare with example
+
+### Step 1: Review Example
+
+See: `Course-Materials/Examples/ReportsControllerRefactored.cs`
+
+**This is ONE possible solution.** Yours may differ!
+
+### Step 2: Comparison Checklist
+
+| Aspect | Your Refactor | Example | Notes |
+|--------|--------------|---------|-------|
+| Number of extracted methods | ___ | 6 | 5-7 is good range |
+| Main method line count | ___ | ~12 | Should be ≤15 |
+| Method names descriptive? | Yes/No | Yes | Compare naming styles |
+| Follows Stepdown Rule? | Yes/No | Yes | Read top-to-bottom flow |
+| Parameter counts reasonable? | ___ avg | 1-3 avg | >3 params might need refactor |
+
+### Step 3: Analysis Questions
+
+**1. Method Count:**
+- Did you extract more or fewer methods than example?
+- If different, why? (Different granularity? Different abstraction choices?)
+
+**2. Naming Comparison:**
+Pick one method where your name differs from example:
+- Your name: _____________
+- Example name: _____________
+- Which is clearer to a new developer? Why?
+
+**3. Abstraction Levels:**
+- Does your main method mix high/low level operations? (Should all be high-level)
+- Example: `AssembleSummary(...)` is high-level ✓, `tasks.Where(...)` is low-level ❌
+
+**4. Parameter Patterns:**
+- Did you pass fewer parameters by grouping data?
+- Example: Passing `tasks` + `projectId` separately, or creating `ProjectContext` class?
+
+### Step 4: "Better Than Example" Justification
+
+If your solution differs, answer:
+
+**My refactor is better because:**
+- ___________
+
+**OR**
+
+**Example is better because:**
+- ___________
+
+**Key Insight:** There's NO single "right" refactor. Evaluate based on:
+- Readability (can new dev understand?)
+- Testability (can pieces be tested alone?)
+- Maintainability (easy to change one piece?)
+
+### Discussion Prompt
+
+Bring to discussion:
+- One extraction choice you're proud of (and why)
+- One extraction you're uncertain about (get feedback)
+- How your approach differed from example (neither wrong, just different!)
+
+**Deliverable:** Add comparison notes to your PR description
+
+---
+
+## 13. Additional Resources
 
 - **[Function Refactor Example](../Examples/FunctionRefactor.cs)**
 - **[Google Java Style Guide: Function Names](https://google.github.io/styleguide/javaguide.html#s5.2.3-method-names)**
