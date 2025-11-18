@@ -8,6 +8,53 @@
 4. **Database** – SQLite (bundled with .NET provider) or SQL Server Express if your team standardises on it
 5. **API Client** – Postman, Insomnia, or VS Code REST Client extension
 
+## 1. Install .NET 8 SDK
+
+### Windows:
+1. Download from https://dotnet.microsoft.com/download/dotnet/8.0
+2. Run installer
+3. Verify: `dotnet --version` (should show 8.0.x)
+
+### macOS:
+```bash
+brew install dotnet@8
+export DOTNET_ROOT=/usr/local/share/dotnet
+echo 'export DOTNET_ROOT=/usr/local/share/dotnet' >> ~/.zshrc
+dotnet --version
+```
+
+### Linux (Ubuntu/Debian):
+```bash
+wget https://dot.net/v1/dotnet-install.sh
+chmod +x dotnet-install.sh
+./dotnet-install.sh --channel 8.0
+export DOTNET_ROOT=$HOME/.dotnet
+export PATH=$PATH:$DOTNET_ROOT
+echo 'export DOTNET_ROOT=$HOME/.dotnet' >> ~/.bashrc
+echo 'export PATH=$PATH:$DOTNET_ROOT' >> ~/.bashrc
+dotnet --version
+```
+
+## 2. Install EF Core Tools
+
+```bash
+dotnet tool install --global dotnet-ef --version 8.0.11
+dotnet ef --version
+```
+
+**If dotnet ef command fails:** Run `export PATH="$PATH:$HOME/.dotnet/tools"` (add to `~/.bashrc` or `~/.zshrc` to persist)
+
+## 3. Verify Setup
+
+Run these commands and verify output:
+- ☐ `dotnet --version` → Shows 8.0.x
+- ☐ `dotnet ef --version` → Shows 8.0.x
+- ☐ `cd TaskFlowAPI && dotnet build` → Build succeeded
+- ☐ `dotnet ef database update` → Applying migration...
+- ☐ `dotnet test ../TaskFlowAPI.sln` → Tests passed
+
+All ✓? You're ready for Week 1!
+
 ## Verification Checklist
 
 ```bash
@@ -51,10 +98,38 @@ You should see Swagger running on `https://localhost:5001/swagger` and the test 
 
 ## Troubleshooting
 
-- **`dotnet` not found** – Ensure the SDK is installed and the terminal has been restarted after installation.
-- **SQLite locking errors** – Close any DB browser windows and delete `TaskFlowAPI/taskflow.db` before re-running migrations.
-- **`dotnet-ef` command missing** – Install the tool with `dotnet tool install --global dotnet-ef` and use `~/.dotnet/tools/dotnet-ef ...` the first time.
-- **SSL certificate warnings** – Run `dotnet dev-certs https --trust` and restart your browser.
+### "You must install .NET to run this application"
+- Set DOTNET_ROOT environment variable (see instructions above)
+- Restart terminal after setting
+- On Windows, restart your IDE as well
+
+### "The model for context has pending changes"
+- Run: `dotnet ef migrations remove --force`
+- Run: `dotnet ef migrations add InitialCreate`
+- Run: `dotnet ef database update`
+
+### dotnet-ef not found
+- Add to PATH: `export PATH="$PATH:$HOME/.dotnet/tools"` (Linux/macOS)
+- Or use full path: `~/.dotnet/tools/dotnet-ef` (Linux/macOS)
+- Or use full path: `%USERPROFILE%\.dotnet\tools\dotnet-ef` (Windows)
+- Or install locally: `dotnet tool install dotnet-ef`
+
+### SQLite locking errors
+- Close any DB browser windows and delete `TaskFlowAPI/taskflow.db` before re-running migrations.
+
+### SSL certificate warnings
+- Run `dotnet dev-certs https --trust` and restart your browser.
+
+### Build errors about missing packages
+- Delete `bin/` and `obj/` folders
+- Run `dotnet restore TaskFlowAPI.sln`
+- Run `dotnet build TaskFlowAPI.sln`
+
+### Port already in use (5001)
+- Kill process using port: 
+  - Windows: `netstat -ano | findstr :5001` then `taskkill /PID <PID> /F`
+  - Linux/macOS: `lsof -ti:5001 | xargs kill -9`
+- Or change port in `Properties/launchSettings.json`
 
 ## Getting Help
 

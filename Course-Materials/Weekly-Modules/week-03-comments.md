@@ -80,4 +80,66 @@ dotnet test TaskFlowAPI.sln
 - 15 min – Testing + PR/issue.
 **Total:** ~75 minutes.
 
-## 11. Additional Resources
+## 11. Comment Examples
+
+### BEFORE (Delete These):
+
+```csharp
+// This method adds two numbers together ❌ Obvious from code
+public int Add(int a, int b) { return a + b; }
+
+// Initializes the variable to zero ❌ What, not why
+int count = 0;
+
+// Loop through tasks ❌ Redundant
+foreach (var task in tasks)
+{
+    // Process each task ❌ Obvious
+    ProcessTask(task);
+}
+
+// Get the user ❌ Repeats method name
+var user = GetUser(userId);
+```
+
+### AFTER (Keep These):
+
+```csharp
+// Fallback to 0 when no user preference exists ✓ Explains why
+int defaultPriority = userPreference ?? 0;
+
+/// <summary>
+/// Validates task before persistence. ✓ API documentation
+/// </summary>
+public void ValidateTask(TaskEntity task) { ... }
+
+// TODO Week 12: support ?priority= query parameter ✓ Future work
+// See issue #42 for requirements
+
+// Performance: Batch size tuned for 95th percentile response time ✓ Design decision
+const int BatchSize = 100;
+
+// HACK: API returns inconsistent date format; parsing as string first ✓ Workaround with context
+// Remove when API v2 is deployed (ETA: Q2 2025)
+var dateString = response.ToString();
+```
+
+### When to Keep Comments:
+
+1. **Legal/Copyright Headers**: Required by organization
+2. **Public API Documentation**: XML docs for consumers
+3. **Warning Comments**: Alert about consequences
+4. **TODO Comments**: Track future work with context
+5. **Explanation of Intent**: When code alone cannot express "why"
+6. **Workarounds**: Temporary fixes with removal plan
+
+### When to Delete Comments:
+
+1. **Obvious "What"**: Comment repeats what code does
+2. **Noise Words**: "Get", "Set", "Process" without value
+3. **Commented-Out Code**: Use version control instead
+4. **Outdated Comments**: No longer match the code
+5. **Redundant Headers**: "Constructor", "Properties" sections
+6. **Journal Comments**: Change history (use git log)
+
+## 12. Additional Resources

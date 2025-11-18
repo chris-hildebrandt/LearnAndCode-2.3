@@ -90,6 +90,124 @@ dotnet test TaskFlowAPI.sln
 - 15 min – Build/test + PR/issue.
 **Total:** ~120 minutes.
 
-## 11. Additional Resources
+## 11. Why Factory Pattern?
+
+### Current Problem:
+
+**Mixing Concerns in TaskMapper:**
+```csharp
+// TaskMapper currently does BOTH conversion AND creation:
+public class TaskMapper
+{
+    public TaskDto ToDto(TaskEntity entity) { ... }      // ✓ Conversion (Entity → DTO)
+    public TaskEntity ToEntity(CreateTaskRequest req);  // ❌ Creation, not conversion!
+}
+```
+
+**Issues:**
+1. **Unclear Responsibility:** Is mapper for conversion or creation?
+2. **No Context-Aware Logic:** Where do we add user-specific defaults?
+3. **Scattered Creation:** Entity creation logic mixed with mapping logic
+
+### Factory Solution:
+
+**Separation of Concerns:**
+- **Factory** = Creates NEW entities (domain object creation)
+- **Mapper** = Converts BETWEEN representations (DTO ↔ Entity)
+
+**Benefits:**
+1. **Extensibility:** Easy to add context-aware defaults (user role, tenant, etc.)
+2. **Testability:** Creation logic tested separately from mapping
+3. **Clarity:** Clear responsibility - factory creates, mapper converts
+
+### Example Use Cases:
+
+**Future enhancements that factories enable:**
+
+```csharp
+public class TaskFactory
+{
+    private readonly ISystemClock _clock;
+    private readonly IUserContext _userContext;  // Future: User info
+    
+    public TaskEntity CreateNewTask(CreateTaskRequest request)
+    {
+        return new TaskEntity
+        {
+            Title = request.Title,
+            Priority = request.Priority ?? GetDefaultPriority(),  // Context-aware!
+            ProjectId = request.ProjectId ?? _userContext.DefaultProjectId,
+            CreatedAt = _clock.UtcNow,
+            CreatedBy = _userContext.CurrentUserId,  // Future
+            IsComplete = false
+        };
+    }
+    
+    private int GetDefaultPriority()
+    {
+        // Business logic: Managers get priority 1, others get priority 3
+        return _userContext.IsManager ? 1 : 3;
+    }
+}
+```
+
+### Factory vs Mapper
+
+```csharp
+// TaskMapper: Converts BETWEEN representations
+public TaskDto ToDto(TaskEntity entity) { ... }      // Entity → DTO
+public TaskEntity ToEntity(CreateTaskRequest req);  // ❌ This is creation, not conversion!
+
+// TaskFactory: Creates NEW entities
+public TaskEntity CreateNewTask(CreateTaskRequest req) { ... } // ✓ Clear responsibility
+
+// Both exist; different purposes:
+// - Factory: Request → Entity (domain creation with defaults)
+// - Mapper: Entity ↔ DTO (presentation layer conversion)
+```
+
+### Before Factory (Week 11-18):
+
+```csharp
+// Creation logic scattered in mapper
+var entity = _mapper.ToEntity(request);  // Mapper doing creation
+var createdEntity = await _taskWriter.CreateAsync(entity);
+return _mapper.ToDto(createdEntity);     // Mapper doing conversion
+```
+
+**Problems:**
+- Mapper has two responsibilities (creation + conversion)
+- No clear place for context-aware defaults
+- Hard to add business rules to creation
+
+### After Factory (Week 19):
+
+```csharp
+// Clear separation
+var entity = _factory.CreateNewTask(request);  // Factory creates with defaults
+var createdEntity = await _taskWriter.CreateAsync(entity);
+return _mapper.ToDto(createdEntity);            // Mapper converts
+```
+
+**Benefits:**
+- Each class has one responsibility
+- Easy to add context-aware defaults to factory
+- Mapper only does conversion
+- Creation logic centralized and testable
+
+### When to Use Factory Pattern:
+
+**Use Factory when:**
+- Object creation has complex initialization
+- Need context-aware defaults (user, tenant, environment)
+- Creation logic needs to be tested independently
+- Multiple ways to create same object type
+
+**Don't use Factory when:**
+- Simple objects with no special creation logic
+- DTOs or data containers (no behavior)
+- Creation is truly trivial (one constructor call)
+
+## 12. Additional Resources
 
 - **[Design Patterns Example](../Examples/DesignPatterns.md)**

@@ -16,45 +16,111 @@ This week, we are focusing on the importance of code review in creating high-qua
 - **[30 Proven Code Review Best Practices from Microsoft](https://www.michaelagreiler.com/code-review-best-practices/)** – Insights from large teams.
 - **[Youtube: How to Do Code Reviews Like a Human](https://www.youtube.com/watch?v=0t4_MfHgb_A)** (optional, 10 min) – Human-first approach.
 
-## 3. This Week’s Work
-- Review **two** classmates’ Week 19 PRs (or designated practice PRs).
-- Leave at least three high-quality comments per PR (nit/praise/question/breakage).
-- Respond to all comments on your own Week 19 PR and make necessary updates.
+## 3. This Week's Work
+- Review **two** sample PRs from `docs/sample-prs/` folder
+- Leave at least three high-quality comments per PR
+- If in cohort with classmates, review their PRs instead
+
+### Solo Learner Alternative:
+1. Review sample PRs in `docs/sample-prs/` folder
+2. Create `docs/my-week-20-review.md` with your feedback
+3. Self-review your own Week 17-19 PRs using checklist
 
 ## 4. Files to Modify
 
 - Code changes only if review feedback uncovers issues in your Week 19 branch.
+- `docs/my-week-20-review.md` (new, for solo learners)
 - This file (`Course-Materials/Weekly-Modules/week-20-code-review-collaboration.md`) – append your journal and discussion prompt responses.
 - `WEEKLY_PROGRESS.md`
 
 ## 5. Step-by-Step Instructions
+
+### For Cohort Members (With Classmates):
 1. Branch `week-20/<your-name>` (only for documentation changes).
-2. Focus comments on behaviour (“This breaks filtering when priority is empty because…”).
-3. Provide at least one suggestion comment (`suggestion` block or code snippet).
-4. On your PR, respond to every comment within 24 hours—commit fixes as needed.
-5. Capture review activity in the Review Log below.
-6. If no classmates are available, ask mentored staff for the current sample PR to review.
+2. Review two classmates' Week 19 PRs.
+3. Focus comments on behaviour ("This breaks filtering when priority is empty because…").
+4. Provide at least one suggestion comment (`suggestion` block or code snippet).
+5. On your PR, respond to every comment within 24 hours—commit fixes as needed.
+6. Capture review activity in the Review Log below.
+
+### For Solo Learners (No Classmates):
+1. Branch `week-20/<your-name>`.
+2. Review the **three** sample PRs in `docs/sample-prs/`:
+   - `week-19-factory-pattern.md` - Good implementation with subtle issues
+   - `week-17-tdd-example.md` - Has 2-3 bugs to identify
+   - `week-12-ocp-filters.md` - Clean implementation to praise
+3. Create `docs/my-week-20-review.md` documenting your review comments (see template below).
+4. Use the **Comment Quality Examples** section below to structure your feedback.
+5. Self-review your own Week 17-19 PRs using the checklist in section 9.
+
+### Sample Review Document Template (`docs/my-week-20-review.md`):
+
+```markdown
+# Week 20 Code Review Practice
+
+## Sample PR 1: week-19-factory-pattern.md
+
+### Comment 1 (Issue - Missing Validation):
+**Location:** TaskFactory.cs, line 11
+**Severity:** Medium
+**Issue:** The CreateNewTask method doesn't validate that request.Title is not null/empty...
+**Suggested Fix:** Add validation at the start of the method...
+
+### Comment 2 (Issue - Missing DI):
+[Your comment here]
+
+### Comment 3 (Praise):
+[Your positive feedback here]
+
+## Sample PR 2: week-17-tdd-example.md
+
+[Repeat structure]
+
+## Sample PR 3: week-12-ocp-filters.md
+
+[Repeat structure]
+
+## Self-Review Checklist
+
+### My Week 17 PR:
+- [ ] Tests follow Arrange-Act-Assert pattern
+- [ ] Test names clearly describe scenarios
+- [ ] No skipped/ignored tests without reason
+- [Your notes...]
+
+### My Week 19 PR:
+- [ ] Factory properly injected via DI
+- [ ] No direct entity construction in service
+- [Your notes...]
+```
 
 ## 6. How to Test
 - Run tests (`dotnet test TaskFlowAPI.sln`) if you make code changes from review feedback.
 
 ## 7. Success Criteria
+
+### For Cohort Members:
 - Two peer reviews completed with actionable comments.
 - All comments on your PR resolved (either code change or explanation).
+
+### For Solo Learners:
+- Three sample PRs reviewed with detailed feedback in `docs/my-week-20-review.md`.
+- At least three high-quality comments per sample PR (minimum 9 total).
+- Self-review checklist completed for your Week 17-19 PRs.
 
 ## 8. Submission Process
 - Commit documentation update `Week 20 – review log`.
 - PR summary includes links to reviews you performed and confirmation your PR comments resolved.
-- Weekly issue attaches screenshot of one review comment thread.
+- Weekly issue attaches screenshot of one review comment thread (or your `my-week-20-review.md` for solo learners).
 
 ## 9. Journal and Discussion Prep
 
 (Use this section as a journal of your learning. Answer the questions below after completing the reading and assignment. ALSO record any questions or comments you would like to bring up during this week's discussion.)
 
 Journal:
-*Review Highlights:* Summarise the most impactful comment you left on a peer’s PR.
+*Review Highlights:* Summarise the most impactful comment you left on a peer's PR (or sample PR).
 
-*Feedback Response:* Reflect on the toughest comment received on your PR and how you resolved it.
+*Feedback Response:* Reflect on the toughest comment received on your PR and how you resolved it (or toughest issue you identified in sample PRs).
 
 Discussion Prep:
 - How did you handle disagreement during review?
@@ -69,7 +135,40 @@ Discussion Prep:
 - 10 min – Prep + checklist review.
 - 30 min – Review PR #1.
 - 30 min – Review PR #2.
+- 30 min – Review PR #3 (solo learners).
 - 10 min – Respond to comments on your PR + documentation.
-**Total:** ~120 minutes (spread through the week).
+**Total:** ~120-150 minutes (spread through the week).
 
-## 11. Additional Resources
+## 11. Comment Quality Examples
+
+### High-Quality Comment Examples:
+
+**BAD:** "Fix this"  
+**GOOD:** "This filtering breaks when priority list is empty because line 42 assumes Count > 0. Suggest adding: `if (priorities.Count == 0) return true;`"
+
+**BAD:** "Wrong"  
+**GOOD:** "The validation should happen before database call (line 15) to avoid unnecessary query. Consider moving validation to top of method."
+
+**BAD:** "Nice job"  
+**GOOD:** "Excellent use of the Factory pattern here! This separation makes it easy to add context-aware defaults in the future (like setting default priority based on user role)."
+
+**BAD:** "This won't work"  
+**GOOD:** "Missing `await` keyword on line 23. This will cause a compilation error because you're assigning `Task<TaskEntity>` to `TaskEntity`. Add: `var task = await _reader.GetByIdAsync(id);`"
+
+### What Makes a Comment High-Quality?
+
+1. **Specific Location**: Reference exact file, line number, or method name
+2. **Explains Impact**: Why is this a problem? What breaks?
+3. **Actionable**: Provides concrete fix or alternative approach
+4. **Respectful**: Assumes good intent, suggests rather than demands
+5. **Educational**: Helps reviewer learn, not just fix
+
+### Comment Types:
+
+- **Critical**: Bugs, security issues, breaks functionality
+- **Important**: Design flaws, performance issues, violates principles
+- **Suggestion**: Improvements, better patterns, readability
+- **Nit**: Formatting, typos, minor style issues
+- **Praise**: Call out good practices, clever solutions, improvements
+
+## 12. Additional Resources

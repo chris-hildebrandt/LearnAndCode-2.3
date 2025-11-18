@@ -37,8 +37,9 @@ Welcome to week 1. This week, we will be introducing you to the importance of cl
 3. Run `dotnet run` inside `TaskFlowAPI/` and verify Swagger at `https://localhost:5001/swagger`.
 4. Run `dotnet test TaskFlowAPI.sln` from the repo root. Confirm only skipped tests.
 5. Read this week's reading assignments.
-6. Read and fill out the `Journal` section of this document, make notes from your learning in the `Discussion Prep` section.
-7. Check off Week 1 in `WEEKLY_PROGRESS.md` once everything above is done.
+6. **NEW:** Complete Code Smell Scavenger Hunt (see Section 11 below) - 30 minutes
+7. Read and fill out the `Journal` section of this document, make notes from your learning in the `Discussion Prep` section.
+8. Check off Week 1 in `WEEKLY_PROGRESS.md` once everything above is done.
 
 ## 6. How to Test
 
@@ -67,10 +68,28 @@ dotnet test TaskFlowAPI.sln
 (Use this section as a journal of your learning. Answer the questions below after completing the reading and assignment. ALSO record any questions or comments you would like to bring up during this week's discussion.)
 
 ### Journal:
-- *The Cost of Mess: Robert C. Martin argues messy code is a professional failure. How does this align with the Manifesto's value of Refactoring?*
-- *Customer Impact: How does a lack of clean code (e.g., poor organization, missing tests) directly harm the value of Customer Centric Design? Give one specific example in a task management app.*
-- *Your Role: Which Manifesto value do you think will be the most challenging for you to implement in the `TaskFlow` API project and why?*
-- *NFRs: Beyond just functionality, what is one Non-Functional Requirement (NFR) that the `TaskFlow` API must meet to be considered "quality" by a partner?*
+
+**After completing Code Smell Scavenger Hunt:**
+
+1. **Customer Impact Example:** 
+   You found the abbreviation `svc` in TasksController. Imagine a new teammate needs to add a feature to create bulk tasks. Walk through their confusion:
+   - What questions will they ask about `svc`?
+   - How many minutes might they waste?
+   - How does this delay = increased cost to customer?
+   - Your answer: [150 words]
+
+2. **Bug Risk Example:**
+   The `GenerateProjectSummaryReport` method has 100+ lines. 
+   - If a bug exists in "calculate percentage" logic, how hard is it to find?
+   - How many OTHER things might break when you fix it?
+   - Your answer: [100 words]
+
+3. **Your Biggest Aha:**
+   What surprised you most about the codebase smell? [50 words]
+
+4. **Manifesto Connection:**
+   - How does a lack of clean code (e.g., poor organization, missing tests) directly harm the value of Customer Centric Design?
+   - Which Manifesto value do you think will be the most challenging for you to implement and why?
 
 ### Discussion Prep:
 - *What did you learn about the curriculum structure?*
@@ -82,11 +101,101 @@ dotnet test TaskFlowAPI.sln
 - 45 min – Read `README.md` + Quality Manifesto + Clean Code chapter.
 - 10 min – Fork + clone repo.
 - 10 min – Environment setup + build/test verification.
-- 15 min – Journal + discussion prep.
+- 30 min – Code Smell Scavenger Hunt (NEW)
+- 20 min – Journal + discussion prep (updated questions)
 - 10 min – Create PR/issue.
-**Total:** ~1 hour 30 minutes.
+**Total:** ~2 hours 5 minutes.
 
-## 11. Getting Help
+## 11. Code Smell Scavenger Hunt (NEW)
+
+**Goal:** Build a mental inventory of "code smells" you'll fix over 23 weeks.
+
+**Time:** 30 minutes
+
+**Instructions:**
+1. Create `docs/week-01-codebase-inventory.md` in your fork
+2. Open the following files and hunt for specific smells:
+
+### Part A: Naming Violations
+
+**Search:** `TaskFlowAPI/Controllers/TasksController.cs` and `TaskFlowAPI/Controllers/ReportsController.cs`
+
+Find and document:
+- **Abbreviations:** Any shortened names (e.g., `svc`, `dt`, `rpt`)
+- **Single letters:** Variable names like `t`, `s`, `i` (outside of loop iterators)
+- **Non-descriptive names:** Methods named `Get()`, `Add()`, `Generate()` without context
+
+| File | Line # (approx) | Bad Name | Category | Why It's Bad |
+|------|-----------------|----------|----------|--------------|
+| TasksController.cs | ~15 | `svc` | Abbreviation | Mental mapping required to understand "service" |
+| ReportsController.cs | ~35 | `t` | Single letter | Could be "task", "total", "temp" - ambiguous |
+| (add your findings) | | | | |
+
+### Part B: Function Smells
+
+**Search:** `TaskFlowAPI/Controllers/ReportsController.cs` - the `GenerateProjectSummaryReport` method
+
+Identify:
+- **Line count:** How many lines is this method? ______
+- **Abstraction levels:** Count how many DIFFERENT things it does (e.g., fetch data, filter, calculate, format)  
+  List them:
+  1. _______________
+  2. _______________
+  3. _______________
+  4. _______________
+  
+- **Nesting depth:** Deepest indentation level (how many tabs/spaces)? ______
+- **Comments as code smell:** Any comment explaining WHAT code does (not WHY)? Quote one: _______________
+
+### Part C: Class & Structure Smells
+
+**Search:** `TaskFlowAPI/Entities/TaskEntity.cs`
+
+Document:
+- **Public setters:** Count properties with public `set` - these will be encapsulated in Week 7
+  - Total count: ______
+  - Which ones seem risky (could be set to invalid values)? _______________
+
+**Search:** `TaskFlowAPI/Services/Tasks/TaskService.cs`
+
+Document:
+- **Method count:** How many public methods? ______ (Will refactor in Week 11 if >7)
+- **Responsibility count:** How many different JOBS does this class have? (e.g., CRUD, validation, mapping)
+  List them: _______________
+
+### Part D: Pattern Recognition (No Code Reading Required)
+
+**Search:** File/folder structure in Solution Explorer
+
+Missing patterns (you'll add these):
+- Week 8: `Repositories/` folder exists?  ______
+- Week 9: `DTOs/` folder exists? ______
+- Week 12: `Filters/` folder exists? ______
+- Week 17: `Tests/Unit/` folder exists? ______
+
+### Part E: Your Predictions
+
+Based on your scavenger hunt, predict:
+
+1. **Hardest Week:** Which week (1-23) will be most challenging based on smells you found?
+   - Your prediction: Week ______ because _______________
+
+2. **Biggest Win:** Which refactoring will have the most impact?
+   - Your prediction: _______________
+
+3. **Question for Discussion:** One thing you're curious about from the codebase: _______________
+
+**Deliverable:** Commit `docs/week-01-codebase-inventory.md` with your completed scavenger hunt before Week 1 PR.
+
+**Why This Matters:**
+- You'll reference this inventory in Weeks 2-4 when fixing these specific smells
+- Builds pattern recognition before you start coding
+- Creates concrete examples for abstract journal questions
+- Gives you ownership of the refactoring journey (you discovered the problems!)
+
+---
+
+## 12. Getting Help
 
 (please fill in the blanks)
 - Team chat `#_____` for quick questions.

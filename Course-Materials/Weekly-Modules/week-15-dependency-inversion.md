@@ -87,6 +87,266 @@ dotnet test TaskFlowAPI.sln
 - 15 min – Update tests + PR/issue.
 **Total:** ~120 minutes.
 
-## 11. Additional Resources
+## 11. Why Abstract System Time?
+
+### Problem with `DateTime.UtcNow`:
+
+**Hard to Test:**
+- Cannot control time in tests
+- Tests break if time-sensitive logic fails
+- Cannot test "created 5 minutes ago" scenarios
+- Every test run produces different timestamps
+
+**Example of the problem:**
+
+```csharp
+// BEFORE (Direct Dependency - Hard to Test):
+public class TaskService
+{
+    public async Task<TaskDto> CreateTaskAsync(CreateTaskRequest request)
+    {
+        var entity = new TaskEntity
+        {
+            Title = request.Title,
+            CreatedAt = DateTime.UtcNow  // ❌ Can't control in tests
+        };
+        
+        await _repository.CreateAsync(entity);
+        return MapToDto(entity);
+    }
+}
+
+// Test problems:
+[Fact]
+public async Task CreateTask_SetsCreatedAt()
+{
+    // ❌ How do we verify CreatedAt is "now"?
+    // ❌ Test will have race conditions
+    // ❌ Can't test time-based logic deterministically
+    var result = await _service.CreateTaskAsync(request);
+    
+    // This assertion is flaky:
+    Assert.True((DateTime.UtcNow - result.CreatedAt).TotalSeconds < 1);
+}
+```
+
+### Solution: Invert the dependency
+
+**AFTER (Abstraction - Easy to Test):**
+
+```csharp
+public class TaskService
+{
+    private readonly ISystemClock _clock;  // ✓ Abstraction injected
+    
+    public TaskService(ISystemClock clock, ...)
+    {
+        _clock = clock;
+    }
+    
+    public async Task<TaskDto> CreateTaskAsync(CreateTaskRequest request)
+    {
+        var entity = new TaskEntity
+        {
+            Title = request.Title,
+            CreatedAt = _clock.UtcNow  // ✓ Can inject FakeClock in tests
+        };
+        
+        await _repository.CreateAsync(entity);
+        return MapToDto(entity);
+    }
+}
+
+// Test benefits:
+[Fact]
+public async Task CreateTask_SetsCreatedAt()
+{
+    // ✓ Deterministic time control
+    var fakeClock = new FakeSystemClock(new DateTime(2025, 1, 15, 10, 30, 0));
+    var service = new TaskService(fakeClock, ...);
+    
+    var result = await _service.CreateTaskAsync(request);
+    
+    // ✓ Exact assertion, no flakiness
+    Assert.Equal(new DateTime(2025, 1, 15, 10, 30, 0), result.CreatedAt);
+}
+```
+
+### Benefits:
+
+1. **Deterministic tests** - Always returns same time
+2. **Test time-based logic** - Can advance time in tests
+3. **No race conditions** - Time is controlled
+4. **Test edge cases** - Easily test past/future scenarios
+
+**Advanced testing example:**
+
+```csharp
+[Fact]
+public async Task GetOverdueTasks_ReturnsTasksDueBeforeNow()
+{
+    // Set "now" to specific date
+    var fakeClock = new FakeSystemClock(new DateTime(2025, 1, 20));
+    
+    // Create task due on Jan 15 (5 days ago)
+    var overdueTask = new TaskEntity 
+    { 
+        DueDate = new DateTime(2025, 1, 15) 
+    };
+    
+    // Test overdue logic with controlled time
+    var overdueTasks = await _service.GetOverdueTasksAsync();
+    
+    // ✓ Clear assertion
+    Assert.Contains(overdueTask, overdueTasks);
+}
+
+[Fact]
+public async Task TaskExpires_AfterSevenDays()
+{
+    var fakeClock = new FakeSystemClock(new DateTime(2025, 1, 1));
+    var service = new TaskService(fakeClock, ...);
+    
+    // Create task
+    var task = await service.CreateTaskAsync(request);
+    
+    // Advance time by 7 days
+    fakeClock.Advance(TimeSpan.FromDays(7));
+    
+    // Verify expiration logic
+    var isExpired = await service.IsTaskExpiredAsync(task.Id);
+    Assert.True(isExpired);
+}
+```
+
+## 12. Scaffolding & Templates
+
+### Template: ISystemClock.cs
+
+Create: `TaskFlowAPI/Infrastructure/Time/ISystemClock.cs`
+
+```csharp
+namespace TaskFlowAPI.Infrastructure.Time;
+
+/// <summary>
+/// Abstraction for system time to enable deterministic testing.
+/// </summary>
+public interface ISystemClock
+{
+    /// <summary>
+    /// Gets the current UTC time.
+    /// </summary>
+    DateTime UtcNow { get; }
+}
+```
+
+### Template: UtcSystemClock.cs
+
+Create: `TaskFlowAPI/Infrastructure/Time/UtcSystemClock.cs`
+
+```csharp
+namespace TaskFlowAPI.Infrastructure.Time;
+
+/// <summary>
+/// Production implementation that returns real system time.
+/// </summary>
+public class UtcSystemClock : ISystemClock
+{
+    public DateTime UtcNow => DateTime.UtcNow;
+}
+```
+
+### Template: FakeSystemClock.cs (for tests)
+
+Create: `TaskFlowAPI.Tests/Fakes/FakeSystemClock.cs`
+
+```csharp
+namespace TaskFlowAPI.Tests.Fakes;
+
+/// <summary>
+/// Test implementation that returns controlled time.
+/// </summary>
+public class FakeSystemClock : ISystemClock
+{
+    private DateTime _currentTime;
+    
+    public FakeSystemClock(DateTime initialTime)
+    {
+        _currentTime = initialTime;
+    }
+    
+    public DateTime UtcNow => _currentTime;
+    
+    /// <summary>
+    /// Advances the clock by the specified duration.
+    /// Useful for testing time-based behavior.
+    /// </summary>
+    public void Advance(TimeSpan duration)
+    {
+        _currentTime = _currentTime.Add(duration);
+    }
+    
+    /// <summary>
+    /// Sets the clock to a specific time.
+    /// </summary>
+    public void SetTime(DateTime time)
+    {
+        _currentTime = time;
+    }
+}
+```
+
+### DI Registration (Program.cs):
+
+```csharp
+// Register clock as singleton (same time for entire application lifetime per instance)
+builder.Services.AddSingleton<ISystemClock, UtcSystemClock>();
+```
+
+### Usage in Services:
+
+```csharp
+public class TaskBusinessRules
+{
+    private readonly ISystemClock _clock;
+    
+    public TaskBusinessRules(ISystemClock clock)
+    {
+        _clock = clock;
+    }
+    
+    public bool IsOverdue(TaskEntity task)
+    {
+        if (!task.DueDate.HasValue)
+            return false;
+            
+        return task.DueDate.Value < _clock.UtcNow;
+    }
+}
+```
+
+### Usage in Tests:
+
+```csharp
+[Fact]
+public void IsOverdue_WhenDueDateInPast_ReturnsTrue()
+{
+    // Arrange
+    var fakeClock = new FakeSystemClock(new DateTime(2025, 1, 20));
+    var rules = new TaskBusinessRules(fakeClock);
+    var task = new TaskEntity 
+    { 
+        DueDate = new DateTime(2025, 1, 15) // 5 days ago
+    };
+    
+    // Act
+    var result = rules.IsOverdue(task);
+    
+    // Assert
+    Assert.True(result);
+}
+```
+
+## 13. Additional Resources
 
 - **[Dependency Inversion Example](../Examples/DependencyInversion.ts)**

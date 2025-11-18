@@ -96,3 +96,315 @@ Discussion Prep:
 - **[The Art of Writing Good Documentation](https://medium.com/analysts-corner/the-art-of-writing-good-documentation-6e4ce4cd3126)**
 - **[YouTube: Writing effective documentation | Beth Aitman](https://www.youtube.com/watch?v=R6zeikbTgVc)**
 - **[YouTube: A practical guide to making good documentation | Beth Aitman](https://www.youtube.com/watch?v=8TD-20Mb_7M)**
+
+---
+
+## 11. Demo Script Template (NEW)
+
+**Goal:** 5-minute walkthrough showing your best work
+
+**Time to prepare:** 20 minutes
+
+### Script Structure
+
+**Minute 1: Introduction (30 seconds)**
+```
+Hi, I'm [name]. This is TaskFlowAPI - a task management system built during
+ITT's 23-week Learn & Code program. I'll show you the architecture, 
+key features, and design decisions.
+```
+
+**Minute 2: Architecture Overview (1 minute)**
+```
+[Screen: Show folder structure in IDE]
+
+"TaskFlowAPI follows Clean Architecture principles:
+- Controllers handle HTTP (thin layer)
+- Services contain business logic (SRP applied Week 11)
+- Repositories abstract data access (Week 8)
+- Validators use FluentValidation (Week 10)
+- Entities have encapsulated behaviors (Week 7)
+
+The project evolved from anemic models to rich domain models over 23 weeks."
+```
+
+**Minute 3: Key Features Demo (2 minutes)**
+```
+[Screen: Swagger UI]
+
+"Let me show 3 key features:
+
+1. Task Creation with Validation
+   [POST /api/tasks with invalid data]
+   → Returns 400 with clear error messages (Week 10 validation)
+
+2. Task Filtering (OCP in action)
+   [GET /api/tasks?status=Completed&priority=1]
+   → Strategy pattern allows filters without modifying service (Week 12)
+
+3. Task Completion
+   [POST /api/tasks/{id}/complete]
+   → Encapsulated behavior enforces 'can't complete twice' rule (Week 7)
+"
+```
+
+**Minute 4: Design Decisions (1 minute)**
+```
+[Screen: Show code snippet - e.g., TaskEntity.Complete()]
+
+"Three key decisions:
+
+1. Repository Pattern (Week 8): Isolates EF Core dependency
+   → Makes testing easier with FakeRepository
+
+2. DTO Pattern (Week 9): Separates API contracts from domain models
+   → Prevents exposing internal structure
+
+3. Strategy Pattern (Week 12): Open/Closed Principle for filters
+   → New filter = new class (no service modification)
+"
+```
+
+**Minute 5: Next Steps (30 seconds)**
+```
+"Next improvements:
+- Add authentication (JWT tokens)
+- Implement caching (IMemoryCache from Week 22)
+- Add integration tests
+
+Thanks for watching! Questions welcome."
+```
+
+---
+
+## 12. Final Retro Template (NEW)
+
+**Create:** `docs/final-retro.md`
+
+**Time:** 30 minutes of honest reflection
+
+```markdown
+# TaskFlowAPI - Final Retrospective
+
+**Developer:** [Your Name]  
+**Date:** [Date]  
+**Program:** ITT Learn & Code (23 weeks)
+
+---
+
+## 🎯 Learning Objectives Achieved
+
+### Week-by-Week Highlights
+
+| Week | Topic | Key Takeaway | Applied In |
+|------|-------|--------------|-----------|
+| 1 | Quality Manifesto | [Your takeaway] | [Where you applied it] |
+| 2 | Meaningful Names | [Your takeaway] | [Where you applied it] |
+| 7 | Encapsulation | [Your takeaway] | TaskEntity.Complete() |
+| 13 | LSP | [Your takeaway] | FakeTaskRepository |
+| ... | ... | ... | ... |
+
+**Top 3 "Aha!" Moments:**
+1. [Moment 1 - e.g., "Week 13 Rectangle/Square bug made LSP click"]
+2. [Moment 2]
+3. [Moment 3]
+
+---
+
+## 💪 Strengths Developed
+
+**Before Learn & Code:**
+- [ ] Could write functions
+- [ ] Understood basic OOP
+- [ ] Used git for commits
+
+**After Learn & Code:**
+- [x] Write SOLID classes with clear responsibilities
+- [x] Apply design patterns (Strategy, Repository, Factory)
+- [x] Test-driven development workflow
+- [x] Git recovery techniques (amend, cherry-pick, conflicts)
+- [x] FluentValidation with DI
+- [x] Encapsulation with EF Core (`init` setters)
+
+**Biggest Growth Area:** [e.g., "Understanding WHEN to apply patterns vs. when simplicity wins"]
+
+---
+
+## 🔧 Technical Debt & Known Issues
+
+**Intentional Shortcuts:**
+1. **Issue:** In-memory database (SQLite)
+   - **Why:** Faster iteration during learning
+   - **Fix:** Migrate to PostgreSQL for production
+   - **Effort:** 2 hours
+
+2. **Issue:** No authentication
+   - **Why:** Out of scope for curriculum
+   - **Fix:** Add JWT token middleware
+   - **Effort:** 4 hours
+
+**Unintentional Issues:**
+1. **Issue:** [e.g., "TaskService still has 150 LOC (should be <100)"]
+   - **Root Cause:** [e.g., "Didn't extract all mapping logic"]
+   - **Fix:** [e.g., "Extract UpdateTaskMapper"]
+   - **Effort:** 1 hour
+
+---
+
+## 📊 Code Quality Metrics
+
+**Before Any Refactoring (Week 1):**
+- TaskService: N/A (didn't exist)
+- Test Coverage: 0%
+- Code Smells: [Count from Week 1 inventory]
+
+**After 23 Weeks:**
+- TaskService: ~150 LOC (orchestration only)
+- Test Coverage: [Your %] (target was 70-80%)
+- SOLID Violations: [Count remaining, be honest]
+
+**Quality Improvements:**
+- Extracted [X] classes (SRP)
+- [Y] filters using Strategy pattern (OCP)
+- [Z] encapsulated behaviors (Week 7)
+
+---
+
+## 🚀 Next Steps (3-Month Plan)
+
+### Month 1: Production Readiness
+- [ ] Add authentication (JWT)
+- [ ] Migrate to PostgreSQL
+- [ ] Set up CI/CD pipeline
+- [ ] Add integration tests
+
+### Month 2: Feature Expansion
+- [ ] Implement caching (Week 22 concepts)
+- [ ] Add task assignments (users)
+- [ ] Build notification system
+- [ ] API versioning (Week 21)
+
+### Month 3: Advanced Topics
+- [ ] Event sourcing for audit trail
+- [ ] gRPC alternative to REST
+- [ ] Performance profiling
+- [ ] Kubernetes deployment
+
+---
+
+## 🎓 Skills For Next Job
+
+**Resume-Ready Skills:**
+1. ✅ Clean Architecture (SOLID principles)
+2. ✅ Test-Driven Development (xUnit, Moq, FluentAssertions)
+3. ✅ ASP.NET Core Web APIs
+4. ✅ Entity Framework Core
+5. ✅ FluentValidation
+6. ✅ Design Patterns (Strategy, Repository, Factory)
+
+**Talking Points for Interviews:**
+- "Refactored 200-line service down to 100 LOC using SRP"
+- "Implemented OCP with strategy pattern for extensible filtering"
+- "Used LSP to create test doubles that match production behavior"
+- "Achieved [X]% test coverage with TDD workflow"
+
+---
+
+## 💡 Advice for Next Learn & Code Student
+
+**Do:**
+- ✅ Complete Week 1 scavenger hunt (creates pattern library)
+- ✅ Use git recovery practice (Week 6) - you'll need it
+- ✅ Do Week 13 LSP lab BEFORE reading theory (discovery works!)
+- ✅ Create decision frameworks early (Week 2, 4, 7 templates)
+
+**Don't:**
+- ❌ Skip "bad example" sections (learn what NOT to do)
+- ❌ Over-engineer Week 11 (Mapper extraction is enough)
+- ❌ Chase 100% test coverage (70-80% is excellent)
+- ❌ Use AI without understanding (Week 5 ethics!)
+
+**Time Management:**
+- Weeks 1-10: Will take longer than estimates (learning curve)
+- Weeks 11-20: Speed up (patterns repeat)
+- Week 13: Allocate extra time (most valuable week)
+
+---
+
+## 📝 Final Thoughts
+
+**What worked well:**
+[Your answer - e.g., "Phased approach to encapsulation in Week 7"]
+
+**What was challenging:**
+[Your answer - e.g., "Understanding FluentValidation DI in Week 10"]
+
+**How this changed my coding:**
+[Your answer - e.g., "I now ask 'What's the responsibility?' before creating any class"]
+
+**Would I recommend this program:**
+[Yes/No and why]
+
+---
+
+**Signature:** [Your Name], [Date]  
+**Mentor:** [Mentor Name]  
+**Completion Status:** ✅ All 23 weeks complete
+```
+
+---
+
+## 13. Production-Ready Checklist (NEW)
+
+**Use this before calling your project "done":**
+
+### Code Quality
+- [ ] No compiler warnings
+- [ ] All tests pass (`dotnet test`)
+- [ ] No TODO comments (or documented in issues)
+- [ ] Consistent naming (Week 2 principles applied)
+- [ ] No magic numbers (constants extracted)
+- [ ] Error messages are actionable (not "Invalid input")
+
+### Architecture
+- [ ] SOLID principles applied (Weeks 11-15)
+- [ ] No circular dependencies
+- [ ] Repository pattern isolates data access
+- [ ] Services contain business logic only
+- [ ] DTOs separate from entities
+
+### Testing
+- [ ] Unit tests for services (70-80% coverage)
+- [ ] Validator tests (100% coverage)
+- [ ] Integration tests for critical paths
+- [ ] No skipped tests
+- [ ] Tests use AAA pattern (Arrange-Act-Assert)
+
+### Documentation
+- [ ] README has quickstart guide
+- [ ] API endpoints documented (Swagger)
+- [ ] Architecture diagram or description
+- [ ] Setup instructions verified
+- [ ] Decision log (key architectural choices)
+
+### Security & Performance
+- [ ] No hardcoded secrets (use appsettings.Development.json)
+- [ ] Validation on all inputs (FluentValidation)
+- [ ] Exception middleware configured (Week 10)
+- [ ] Database indexes on foreign keys
+- [ ] Async/await used correctly (no .Result or .Wait())
+
+### Git Hygiene
+- [ ] Meaningful commit messages (Week 6 convention)
+- [ ] No merge conflicts in main
+- [ ] Feature branches cleaned up
+- [ ] .gitignore up to date (no bin/obj folders)
+
+**Grade yourself:** [X] / 30 checkboxes
+
+- 27-30: Production ready ✅
+- 20-26: Close, address key gaps 🟡
+- <20: Needs more work ❌
+
+---
+

@@ -18,10 +18,14 @@ This week, we will introduce version control using Git, aligning with In Time Te
 ## 3. This Week’s Work
 
 - Complete the following Git tutorial: **[https://learngitbranching.js.org/?locale=en_US](https://learngitbranching.js.org/?locale=en_US)**
-- Analyze how Git is being used in your project, and perform basic version control tasks such as branching, merging, and conflict resolution.
+- **REVISED:** Make a meaningful code refactor (validation extraction) instead of TODO comment
+- **NEW:** Practice git recovery techniques (amend, cherry-pick, conflict resolution)
+- Document your git "oops" moments and how you recovered
 
 ## 4. Files to Modify
 
+- `TaskFlowAPI/Controllers/TasksController.cs` (NEW - extract validation method)
+- `docs/week-06-git-recovery-log.md` (NEW - document recovery scenarios)
 - This file (`Course-Materials/Weekly-Modules/week-06-git-workflow.md`) – append your journal and discussion prompt responses.
 - `WEEKLY_PROGRESS.md`
 
@@ -43,7 +47,13 @@ No testing this week.
 
 ## 7. Success Criteria
 
-- Git Tutorial Completed.
+- ✅ Git Tutorial completed (learngitbranching.js.org)
+- ✅ Made meaningful code improvement (validation extraction, not TODO)
+- ✅ Demonstrated 3 git recovery techniques (amend, cherry-pick, reset)
+- ✅ Resolved at least one merge conflict manually
+- ✅ Wrote clear commit message following convention (verb: description format)
+- ✅ `docs/week-06-git-recovery-log.md` documents all "oops" scenarios and solutions
+- ✅ PR open with at least one review comment (self-review acceptable)
 
 ## 8. Submission Process
 
@@ -65,12 +75,78 @@ No testing this week.
 
 ## 10. Time Estimate
 
-- 10 min – Plan Git workflow.
-- 25 min – Implement placeholder + commits.
-- 15 min – PR + review response.
-**Total:** ~50 minutes.
+- 10 min – Complete Git tutorial (if not already done).
+- **20 min – Part A: Meaningful code change (validation extraction) - NEW**
+- **15 min – Part B: Git recovery scenarios (amend, cherry-pick) - NEW**
+- **15 min – Part C: Conflict resolution practice - NEW**
+- 10 min – Part D: PR + review response.
+**Total:** ~70 minutes (increased, but teaches real git skills).
 
-## 11. Additional Resources
+## 11. Git Recovery Commands Reference (NEW)
+
+**Common "Oops" Scenarios:**
+
+### Amend Last Commit
+```bash
+# Change commit message
+git commit --amend -m "new message"
+
+# Add forgotten file without changing message
+git add forgotten-file.cs
+git commit --amend --no-edit
+```
+
+### Wrong Branch
+```bash
+# Save commit hash
+git log -1  # copy hash
+
+# Move to correct branch
+git checkout -b correct-branch main
+git cherry-pick <hash>
+
+# Clean up wrong branch
+git checkout wrong-branch
+git reset --hard HEAD~1
+git branch -D wrong-branch
+```
+
+### Undo Last Commit (Keep Changes)
+```bash
+git reset --soft HEAD~1  # Undo commit, keep changes staged
+git reset HEAD~1         # Undo commit, keep changes unstaged
+git reset --hard HEAD~1  # Undo commit, discard changes (DANGEROUS!)
+```
+
+### Resolve Merge Conflict
+```bash
+git merge feature-branch
+# Conflict! Edit files to resolve
+git add resolved-file.cs
+git commit -m "merge: resolve conflicts"
+```
+
+### View What Changed
+```bash
+git diff                 # Unstaged changes
+git diff --staged        # Staged changes
+git diff HEAD~1          # Last commit changes
+git log --oneline -5     # Last 5 commits
+```
+
+**When to Use:**
+- `--amend`: Fix typo or add forgotten file (before pushing)
+- `cherry-pick`: Move commit to correct branch
+- `reset --soft`: Undo commit but keep work
+- `reset --hard`: Start over (use cautiously!)
+
+**Golden Rule:** Never rewrite history AFTER pushing (unless you know what you're doing)
+
+---
+
+## 12. Additional Resources
 
 - **[Pro Git Book](https://git-scm.com/book/en/v2)**
 - **[Git for Professionals by freeCodeCamp](https://www.freecodecamp.org/news/git-for-professionals/)**
+- **[Oh Shit, Git!?!](https://ohshitgit.com/)** - Plain English git error recovery
+- **[Atlassian Git Tutorials](https://www.atlassian.com/git/tutorials)** - Interactive lessons

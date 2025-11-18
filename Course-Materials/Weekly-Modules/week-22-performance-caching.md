@@ -91,7 +91,358 @@ dotnet test TaskFlowAPI.sln
 - 15 min – Testing/log verification + PR/issue.
 **Total:** ~125 minutes.
 
-## 11. Additional Resources
+## 11. Caching Examples & Patterns
+
+### Define ITaskCache Interface
+
+```csharp
+namespace TaskFlowAPI.Infrastructure.Caching;
+
+/// <summary>
+/// Abstraction for caching task query results
+/// </summary>
+public interface ITaskCache
+{
+    /// <summary>
+    /// Gets cached value by key
+    /// </summary>
+    Task<PagedResponse<TaskDto>?> GetAsync(string key);
+    
+    /// <summary>
+    /// Sets value in cache with optional TTL (time-to-live)
+    /// </summary>
+    Task SetAsync(string key, PagedResponse<TaskDto> value, TimeSpan? ttl = null);
+    
+    /// <summary>
+    /// Removes specific key from cache
+    /// </summary>
+    Task RemoveAsync(string key);
+    
+    /// <summary>
+    /// Clears all cached entries
+    /// </summary>
+    Task ClearAsync();
+}
+```
+
+### Implement MemoryTaskCache
+
+```csharp
+using Microsoft.Extensions.Caching.Memory;
+
+namespace TaskFlowAPI.Infrastructure.Caching;
+
+public class MemoryTaskCache : ITaskCache
+{
+    private readonly IMemoryCache _cache;
+    private readonly ILogger<MemoryTaskCache> _logger;
+    private static readonly TimeSpan DefaultTtl = TimeSpan.FromSeconds(60);
+    
+    public MemoryTaskCache(IMemoryCache cache, ILogger<MemoryTaskCache> logger)
+    {
+        _cache = cache;
+        _logger = logger;
+    }
+    
+    public Task<PagedResponse<TaskDto>?> GetAsync(string key)
+    {
+        if (_cache.TryGetValue(key, out PagedResponse<TaskDto>? value))
+        {
+            _logger.LogInformation("Cache hit for key: {Key}", key);
+            return Task.FromResult(value);
+        }
+        
+        _logger.LogInformation("Cache miss for key: {Key}", key);
+        return Task.FromResult<PagedResponse<TaskDto>?>(null);
+    }
+    
+    public Task SetAsync(string key, PagedResponse<TaskDto> value, TimeSpan? ttl = null)
+    {
+        var options = new MemoryCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = ttl ?? DefaultTtl
+        };
+        
+        _cache.Set(key, value, options);
+        _logger.LogInformation("Cached value for key: {Key} with TTL: {Ttl}", 
+            key, ttl ?? DefaultTtl);
+        
+        return Task.CompletedTask;
+    }
+    
+    public Task RemoveAsync(string key)
+    {
+        _cache.Remove(key);
+        _logger.LogInformation("Removed cache key: {Key}", key);
+        return Task.CompletedTask;
+    }
+    
+    public Task ClearAsync()
+    {
+        // Note: IMemoryCache doesn't have a Clear() method
+        // Options: 1) Track keys, 2) Create wrapper, 3) Restart app
+        // For this example, we'll log a warning
+        _logger.LogWarning("MemoryCache does not support clearing all entries");
+        return Task.CompletedTask;
+    }
+}
+```
+
+### Cache Key Generation
+
+```csharp
+private string GenerateCacheKey(ITaskFilter? filter, int page, int pageSize)
+{
+    // Simple approach: combine filter + pagination into unique key
+    var filterKey = filter?.GetHashCode().ToString() ?? "all";
+    return $"tasks_{filterKey}_p{page}_s{pageSize}";
+}
+
+// Alternative: More robust key generation
+private string GenerateCacheKey(TaskQueryParams queryParams)
+{
+    var parts = new List<string>
+    {
+        "tasks",
+        $"p{queryParams.Page}",
+        $"s{queryParams.PageSize}"
+    };
+    
+    if (queryParams.Status.HasValue)
+        parts.Add($"status{queryParams.Status}");
+        
+    if (queryParams.Priority.HasValue)
+        parts.Add($"priority{queryParams.Priority}");
+        
+    if (queryParams.DueBefore.HasValue)
+        parts.Add($"duebefore{queryParams.DueBefore:yyyyMMdd}");
+    
+    return string.Join("_", parts);
+}
+```
+
+### TTL (Time-To-Live) Guidelines
+
+```csharp
+public static class CacheTtl
+{
+    /// <summary>
+    /// Short TTL for frequently changing data (tasks)
+    /// </summary>
+    public static readonly TimeSpan Short = TimeSpan.FromSeconds(30);
+    
+    /// <summary>
+    /// Medium TTL for relatively stable data
+    /// </summary>
+    public static readonly TimeSpan Medium = TimeSpan.FromMinutes(5);
+    
+    /// <summary>
+    /// Long TTL for rarely changing data
+    /// </summary>
+    public static readonly TimeSpan Long = TimeSpan.FromHours(1);
+}
+```
+
+**For tasks:** 60 seconds balances freshness and performance
+
+- Too short (< 10s): Cache benefits minimal
+- Too long (> 5 min): Stale data risk
+- Sweet spot (30-60s): Good balance for active applications
+
+### Usage in TaskService
+
+```csharp
+public class TaskService
+{
+    private readonly ITaskReader _taskReader;
+    private readonly ITaskWriter _taskWriter;
+    private readonly ITaskCache _cache;
+    private readonly ILogger<TaskService> _logger;
+    
+    public async Task<PagedResponse<TaskDto>> GetAllTasksAsync(
+        ITaskFilter? filter, 
+        int page, 
+        int pageSize)
+    {
+        // Generate cache key
+        var cacheKey = GenerateCacheKey(filter, page, pageSize);
+        
+        // Try cache first
+        var cached = await _cache.GetAsync(cacheKey);
+        if (cached != null)
+        {
+            return cached;
+        }
+        
+        // Cache miss - fetch from database
+        _logger.LogInformation("Fetching tasks from database");
+        var tasks = await _taskReader.GetAllAsync();
+        
+        // Apply filters
+        if (filter != null)
+        {
+            tasks = tasks.Where(t => filter.IsMatch(t)).ToList();
+        }
+        
+        // Apply pagination
+        var pagedResult = ApplyPagination(tasks, page, pageSize);
+        
+        // Store in cache
+        await _cache.SetAsync(cacheKey, pagedResult, TimeSpan.FromSeconds(60));
+        
+        return pagedResult;
+    }
+}
+```
+
+### Cache Invalidation Pattern
+
+```csharp
+public async Task<TaskDto> CreateTaskAsync(CreateTaskRequest request)
+{
+    var entity = _factory.CreateNewTask(request);
+    var created = await _taskWriter.CreateAsync(entity);
+    
+    // Invalidate all cached task lists
+    await _cache.ClearAsync();
+    
+    _logger.LogInformation("Task created, cache invalidated");
+    
+    return _mapper.ToDto(created);
+}
+
+public async Task UpdateTaskAsync(int id, UpdateTaskRequest request)
+{
+    var existing = await _taskReader.GetByIdAsync(id);
+    
+    if (existing == null)
+        throw new TaskNotFoundException(id);
+    
+    // Update logic...
+    await _taskWriter.UpdateAsync(existing);
+    
+    // Invalidate cache
+    await _cache.ClearAsync();
+    
+    return _mapper.ToDto(existing);
+}
+
+public async Task DeleteTaskAsync(int id)
+{
+    var existing = await _taskReader.GetByIdAsync(id);
+    
+    if (existing == null)
+        return; // Idempotent delete
+    
+    await _taskWriter.DeleteAsync(existing);
+    
+    // Invalidate cache
+    await _cache.ClearAsync();
+}
+```
+
+**Cache Invalidation Strategies:**
+
+1. **Clear All** (simple): Remove all cached entries on any write
+   - Pros: Simple, no stale data
+   - Cons: Throws away good cache entries
+
+2. **Selective** (advanced): Remove only affected entries
+   - Pros: Preserves unrelated cache
+   - Cons: Complex key tracking
+
+3. **TTL-based** (passive): Let cache expire naturally
+   - Pros: No invalidation code
+   - Cons: Stale data risk
+
+**For TaskFlow API:** Start with "Clear All" (simple), optimize later if needed
+
+### DI Registration (Program.cs)
+
+```csharp
+// Register memory cache (built-in)
+builder.Services.AddMemoryCache();
+
+// Register our cache abstraction
+builder.Services.AddScoped<ITaskCache, MemoryTaskCache>();
+
+// Optional: Configure memory cache options
+builder.Services.AddMemoryCache(options =>
+{
+    options.SizeLimit = 1024; // Limit cache size
+    options.CompactionPercentage = 0.2; // Compact when 80% full
+});
+```
+
+### Testing Cache Behavior
+
+```csharp
+[Fact]
+public async Task GetAllTasks_CachesResult()
+{
+    // Arrange
+    var mockCache = new Mock<ITaskCache>();
+    mockCache.Setup(c => c.GetAsync(It.IsAny<string>()))
+        .ReturnsAsync((PagedResponse<TaskDto>?)null); // Cache miss
+    
+    var service = new TaskService(mockReader, mockWriter, mockCache.Object, ...);
+    
+    // Act
+    var result = await service.GetAllTasksAsync(null, 1, 20);
+    
+    // Assert
+    mockCache.Verify(c => c.SetAsync(
+        It.IsAny<string>(), 
+        It.IsAny<PagedResponse<TaskDto>>(), 
+        It.IsAny<TimeSpan?>()), 
+        Times.Once);
+}
+
+[Fact]
+public async Task GetAllTasks_ReturnsCachedResult_WhenAvailable()
+{
+    // Arrange
+    var cachedResult = new PagedResponse<TaskDto> { /* ... */ };
+    
+    var mockCache = new Mock<ITaskCache>();
+    mockCache.Setup(c => c.GetAsync(It.IsAny<string>()))
+        .ReturnsAsync(cachedResult); // Cache hit
+    
+    var mockReader = new Mock<ITaskReader>();
+    var service = new TaskService(mockReader.Object, mockWriter, mockCache.Object, ...);
+    
+    // Act
+    var result = await service.GetAllTasksAsync(null, 1, 20);
+    
+    // Assert
+    Assert.Same(cachedResult, result);
+    mockReader.Verify(r => r.GetAllAsync(), Times.Never); // Database not called
+}
+```
+
+### Monitoring Cache Effectiveness
+
+```csharp
+// Add metrics/logging to track cache performance
+private int _cacheHits = 0;
+private int _cacheMisses = 0;
+
+public async Task<PagedResponse<TaskDto>?> GetAsync(string key)
+{
+    if (_cache.TryGetValue(key, out PagedResponse<TaskDto>? value))
+    {
+        Interlocked.Increment(ref _cacheHits);
+        _logger.LogInformation("Cache hit rate: {HitRate:P}", 
+            (double)_cacheHits / (_cacheHits + _cacheMisses));
+        return value;
+    }
+    
+    Interlocked.Increment(ref _cacheMisses);
+    return null;
+}
+```
+
+## 12. Additional Resources
 
 - **[Concurrency and Performance Example](../Examples/ConcurrencyAndPerformance.md)**
 - **[Introduction to Concurrent Programming: A Beginner's Guide](https://www.toptal.com/software/introduction-to-concurrent-programming)** – Optional concurrency refresher.
