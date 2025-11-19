@@ -76,6 +76,10 @@ public class TaskService : ITaskService
     // This is an important separation: Entities map to the database, while DTOs map to what the outside world (the client) sees.
     // Helper methods intentionally private for Week 11 extraction into TaskMapper / TaskValidator classes.
     
+    // CODE SMELL: Feature Envy (Clean Code Ch 17, p. 291)
+    // This method accesses multiple properties of TaskEntity to create a DTO.
+    // The mapping logic should be in a dedicated mapper class, not in the service.
+    // Refactor by: Extract to TaskMapper class (Week 11 exercise).
     /// <summary>
     /// Maps a TaskEntity (database object) to a TaskDto (data transfer object).
     /// This is used to control what data about a task is sent back to the client.
@@ -101,6 +105,10 @@ public class TaskService : ITaskService
         };
     }
 
+    // CODE SMELL: Duplicate Code (Clean Code Ch 17, p. 289)
+    // This mapping pattern (property-by-property assignment) is similar to MapToDto above.
+    // Both methods do data transformation and could share common logic.
+    // Refactor by: Extract both to TaskMapper class to centralize mapping logic.
     /// <summary>
     /// Maps a CreateTaskRequest (DTO from the client) to a TaskEntity (database object).
     /// This is used to translate incoming data into a format that can be saved to the database.

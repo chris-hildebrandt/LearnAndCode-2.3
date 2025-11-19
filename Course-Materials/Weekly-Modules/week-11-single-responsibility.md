@@ -200,7 +200,182 @@ dotnet test TaskFlowAPI.sln
 - 15 min – Test + PR/issue.
 **Total:** ~140 minutes.
 
-## 11. Additional Resources
+## 11. SRP Smell Detector Framework (NEW)
+
+**Purpose:** Systematic approach to identifying SRP violations before extracting classes
+
+**Time:** 15 minutes
+
+### Step 1: Identify Responsibilities
+
+For each method in `TaskService`, answer these questions:
+
+1. **What is this method's primary purpose?**
+   - Example: `CreateTaskAsync` - "Creates a new task in the system"
+
+2. **What other concerns does it handle?**
+   - Example: `CreateTaskAsync` also:
+     - Validates the request
+     - Maps request to entity
+     - Applies business rules
+     - Saves to database
+     - Maps entity to DTO
+     - Logs the operation
+
+3. **Could this method be split into smaller methods?**
+   - If yes, list what each extracted method would do
+
+### Step 2: Responsibility Scoring
+
+For each responsibility identified, score it (1-5):
+
+| Score | Meaning | Example |
+|-------|---------|---------|
+| 1 | Core responsibility (must stay) | Orchestrating the create flow |
+| 2 | Related but separable | Logging the operation |
+| 3 | Related but different concern | Validating the request |
+| 4 | Unrelated concern | Mapping between layers |
+| 5 | Completely unrelated | Business rule validation |
+
+**Scoring Guidelines:**
+- **Score 1:** The method's main purpose (orchestration)
+- **Score 2-3:** Related concerns that could be extracted but are somewhat related
+- **Score 4-5:** Different concerns that should definitely be extracted
+
+### Step 3: Extraction Decision Matrix
+
+Create a table for each method:
+
+| Method | Responsibility | Score | Extract? | Target Class | Reason |
+|--------|---------------|-------|----------|--------------|--------|
+| CreateTaskAsync | Orchestration | 1 | No | (stays) | Core purpose |
+| CreateTaskAsync | Validation | 3 | Yes | TaskValidator | Different concern |
+| CreateTaskAsync | Mapping Request→Entity | 4 | Yes | TaskMapper | Different layer |
+| CreateTaskAsync | Business Rules | 5 | Yes | TaskBusinessRules | Domain logic |
+| CreateTaskAsync | Mapping Entity→DTO | 4 | Yes | TaskMapper | Different layer |
+| CreateTaskAsync | Logging | 2 | Maybe | (stays) | Cross-cutting, acceptable |
+
+**Decision Rule:**
+- **Score 4-5:** Always extract
+- **Score 3:** Extract if it appears in multiple methods (duplicate code)
+- **Score 2:** Extract if it's complex or reusable
+- **Score 1:** Keep in service
+
+### Step 4: Extraction Impact Prediction
+
+Before extracting, predict the impact:
+
+**For each extraction candidate, answer:**
+
+1. **How many files will change?**
+   - Example: Extracting TaskMapper affects:
+     - TaskService.cs (remove mapping methods)
+     - Program.cs (add DI registration)
+     - TaskService tests (update mocks)
+
+2. **Will tests need updates?**
+   - Example: Yes - need to mock TaskMapper in service tests
+
+3. **Will DI registration change?**
+   - Example: Yes - add `builder.Services.AddScoped<TaskMapper>()`
+
+4. **Will this break existing functionality?**
+   - Example: No - just moving code, not changing logic
+
+### Step 5: Extraction Order Planning
+
+**Recommended order (easiest to hardest):**
+
+1. **TaskMapper** (easiest)
+   - ✅ No dependencies on other services
+   - ✅ Pure data transformation
+   - ✅ Easy to test in isolation
+   - ✅ Low risk of breaking things
+
+2. **TaskBusinessRules** (medium)
+   - ⚠️ May depend on entities
+   - ⚠️ May need ISystemClock (if time-based rules)
+   - ✅ Still isolated logic
+   - ✅ Testable with fake entities
+
+3. **TaskValidator** (if needed)
+   - ⚠️ May already exist (FluentValidation)
+   - ⚠️ Check if extraction is needed
+
+**Why this order?**
+- Start with easiest (builds confidence)
+- Each extraction makes the next one easier
+- Reduces risk of breaking functionality
+
+### Example: TaskService.CreateTaskAsync Analysis
+
+**Method:** `CreateTaskAsync(CreateTaskRequest request, CancellationToken ct)`
+
+**Responsibilities Identified:**
+
+| Responsibility | Score | Extract? | Target Class |
+|----------------|-------|----------|--------------|
+| Orchestrate create flow | 1 | No | (stays in service) |
+| Validate request | 3 | Yes | TaskValidator (or FluentValidation) |
+| Map request to entity | 4 | Yes | TaskMapper |
+| Apply business rules | 5 | Yes | TaskBusinessRules |
+| Save to repository | 1 | No | (stays - calls repository) |
+| Map entity to DTO | 4 | Yes | TaskMapper |
+| Log operation | 2 | Maybe | (stays - acceptable) |
+
+**Extraction Plan:**
+1. Extract TaskMapper (handles both request→entity and entity→DTO mapping)
+2. Extract TaskBusinessRules (handles business rule validation)
+3. Keep validation in FluentValidation (already extracted)
+4. Keep orchestration, repository calls, and logging in service
+
+**Predicted Impact:**
+- Files changed: 3 (TaskService, new TaskMapper, new TaskBusinessRules, Program.cs)
+- Tests updated: Yes (mock mapper and rules)
+- DI updated: Yes (register 2 new services)
+- Risk: Low (pure extraction, no logic changes)
+
+### Checklist: Is This an SRP Violation?
+
+Answer these questions for each method/class:
+
+**For Methods:**
+- [ ] Does this method do more than one thing?
+- [ ] Could you describe what it does with "and" (e.g., "validates AND maps AND saves")?
+- [ ] Does it have multiple levels of abstraction?
+- [ ] Would extracting a method make the code clearer?
+
+**For Classes:**
+- [ ] Does this class have multiple reasons to change?
+- [ ] Could you split it into 2+ focused classes?
+- [ ] Do methods in this class have different concerns?
+- [ ] Is the class >200 lines?
+
+**If you answered "yes" to 2+ questions, it's likely an SRP violation.**
+
+### When NOT to Extract
+
+**Don't extract if:**
+- ❌ The responsibility is trivial (1-2 lines)
+- ❌ Extraction would create unnecessary indirection
+- ❌ The code is only used in one place (no reuse benefit)
+- ❌ The abstraction would be more complex than the code itself
+
+**Example of when NOT to extract:**
+```csharp
+// ❌ DON'T extract this - too trivial
+private string FormatTitle(string title) => title.Trim();
+
+// ✅ DO extract this - complex logic, reusable
+private TaskDto MapToDto(TaskEntity entity)
+{
+    // 15 lines of mapping logic used in 3 places
+}
+```
+
+---
+
+## 12. Additional Resources
 
 - **[Single Responsibility Example](../Examples/SingleResponsibility.cs)**
 - **[Single Responsibility Principle - Wikipedia](https://en.wikipedia.org/wiki/Single-responsibility_principle)** - Comprehensive overview of SRP with Robert C. Martin's original definition.

@@ -89,15 +89,6 @@ dotnet test TaskFlowAPI.sln
 - 15 min – Manual verification + PR/issue.
 **Total:** ~120 minutes.
 
-## 11. Additional Resources
-
-- **[Open-Closed Example](../Examples/Open-Closed.ts)**
-- **[Understanding SOLID: Open-Closed Principle - Dev.to](https://dev.to/tkarropoulos/the-open-closed-principle-a-guide-to-writing-maintainable-code-15gm)** - Comprehensive guide with practical code examples.
-- **[Open-Closed Principle - Wikipedia](https://en.wikipedia.org/wiki/Open-closed_principle)** - Original definition by Bertrand Meyer and evolution of the principle.
-- **[Open-Closed Principle in Java - GeeksForGeeks](https://www.geeksforgeeks.org/open-closed-principle-in-java-with-examples/)** - Practical implementation examples in Java.
-- **[Mastering SOLID: Open-Closed Principle - LinkedIn](https://www.linkedin.com/pulse/solid-principles-python-open-closed-principle-mahdi-jafari)** - Modern interpretation with Python examples.
-- **[Open-Closed Principle in Practice - HowToDoInJava](https://howtodoinjava.com/best-practices/open-closed-principle/)** - Real-world applications and best practices.
-
 ## 11. "Before OCP" Anti-Pattern (NEW - Learn What NOT To Do)
 
 **Goal:** See the problem OCP solves (if/else explosion)
@@ -184,4 +175,15 @@ public async Task<List<TaskDto>> GetAllTasksAsync(ITaskFilter? filter = null)
 3. Third time: Refactor to OCP
 
 **This Week:** Task filtering justified (5+ filter types expected)
+
+---
+
+## 13. Additional Resources
+
+- **[Open-Closed Example](../Examples/Open-Closed.ts)**
+- **[Understanding SOLID: Open-Closed Principle - Dev.to](https://dev.to/tkarropoulos/the-open-closed-principle-a-guide-to-writing-maintainable-code-15gm)** - Comprehensive guide with practical code examples.
+- **[Open-Closed Principle - Wikipedia](https://en.wikipedia.org/wiki/Open-closed_principle)** - Original definition by Bertrand Meyer and evolution of the principle.
+- **[Open-Closed Principle in Java - GeeksForGeeks](https://www.geeksforgeeks.org/open-closed-principle-in-java-with-examples/)** - Practical implementation examples in Java.
+- **[Mastering SOLID: Open-Closed Principle - LinkedIn](https://www.linkedin.com/pulse/solid-principles-python-open-closed-principle-mahdi-jafari)** - Modern interpretation with Python examples.
+- **[Open-Closed Principle in Practice - HowToDoInJava](https://howtodoinjava.com/best-practices/open-closed-principle/)** - Real-world applications and best practices.
 

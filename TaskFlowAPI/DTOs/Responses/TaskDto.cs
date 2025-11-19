@@ -12,6 +12,10 @@
 
 namespace TaskFlowAPI.DTOs.Responses;
 
+// CODE SMELL: Data Class (Clean Code Ch 17, p. 295)
+// This DTO has only getters/setters with no behavior.
+// Consider adding helper methods like IsOverdue(), GetPriorityLabel(), FormatSummary(), etc.
+// Refactor by: Add domain behavior methods to DTO (if appropriate) or create extension methods.
 /// <summary>
 /// Represents the data for a single task that is sent back to the client.
 /// This is the public-facing model for a task.

@@ -25,6 +25,10 @@ public class TaskServiceTestsExample
 {
     // The `[Fact]` attribute from xUnit marks this method as a test. The test runner will discover and execute it.
     // The `Skip` property tells the test runner to ignore this test. This is useful for example tests or tests that are temporarily broken.
+    // CODE SMELL: Obscure Test (Clean Code Ch 17, p. 299)
+    // This test name doesn't clearly describe what scenario is being tested.
+    // The test body is also unclear about expected behavior.
+    // Refactor by: Use descriptive test name following "MethodName_Scenario_ExpectedBehavior" pattern.
     [Fact(Skip = "Example only - Week 17 students will create their own passing tests.")]
     // Test method names should be descriptive and clearly state what they are testing and the expected outcome.
     // A common pattern is `MethodName_ExpectedBehavior_WhenCondition`.
@@ -32,6 +36,10 @@ public class TaskServiceTestsExample
     {
         // Tests are typically structured in three parts: Arrange, Act, and Assert (AAA).
 
+        // CODE SMELL: Comments (Clean Code Ch 17, p. 297)
+        // These comments explain what the code does, which should be obvious from reading the code.
+        // Comments like "ARRANGE: In this section..." are redundant.
+        // Refactor by: Remove explanatory comments, keep only "why" comments if needed.
         // ARRANGE: In this section, we set up everything needed for the test.
         // This includes creating mock objects for dependencies, setting up input data, and configuring the expected behavior of the mocks.
         
@@ -40,13 +48,16 @@ public class TaskServiceTestsExample
         var repositoryMock = new Mock<ITaskRepository>();
         var loggerMock = new Mock<ILogger<TaskService>>(); // We also mock the logger.
 
+        // CODE SMELL: Magic Numbers (Clean Code Ch 17, G25)
+        // The numbers 2 and 1 are magic numbers without clear meaning.
+        // Refactor by: Extract to named constants: private const int MediumPriority = 2; private const int DefaultProjectId = 1;
         // This is the input data for our test.
         var request = new CreateTaskRequest
         {
             Title = "Document scaffolding",
             Description = "Demonstration of Arrange/Act/Assert",
-            Priority = 2,
-            ProjectId = 1
+            Priority = 2, // Magic number: 2
+            ProjectId = 1 // Magic number: 1
         };
 
         // Here, we configure the behavior of our mock repository.
@@ -55,7 +66,10 @@ public class TaskServiceTestsExample
             .Setup(repo => repo.CreateAsync(It.IsAny<TaskEntity>(), It.IsAny<CancellationToken>())) // When `CreateAsync` is called with any TaskEntity...
             .ReturnsAsync((TaskEntity entity, CancellationToken _) => // ...immediately return a Task that resolves to the following:
             {
-                entity.Id = 42; // Simulate the database generating an ID for the new entity.
+                // CODE SMELL: Magic Numbers (Clean Code Ch 17, G25)
+                // The number 42 is a magic number (arbitrary test ID).
+                // Refactor by: Extract to named constant: private const int TestTaskId = 42;
+                entity.Id = 42; // Magic number: 42 - Simulate the database generating an ID for the new entity.
                 return entity;
             });
 
