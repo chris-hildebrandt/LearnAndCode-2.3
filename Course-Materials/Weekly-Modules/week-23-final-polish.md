@@ -80,25 +80,6 @@ Discussion Prep:
 - 30 min – Record/demo + upload.
 **Total:** ~95 minutes.
 
-## 11. Additional Resources
-
-**Video Tutorials:**
-- **[Event-Driven Architecture Explained](https://www.youtube.com/watch?v=DtuVN5g_e3k)**
-- **[Event-Driven Architecture in the Real World](https://www.youtube.com/watch?v=ksRCq0BJef8)**
-- **[Event-Driven Microservices](https://www.youtube.com/watch?v=moCcKZ_eHHs)**
-
-**Technical Documentation:**
-- **[Apache Kafka Documentation](https://kafka.apache.org/documentation/)**
-- **[RabbitMQ Concepts](https://www.rabbitmq.com/tutorials/amqp-concepts.html)**
-- **[AWS Event Bridge Patterns](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-event-patterns.html)**
-- **[Technical Documentation Best Practices](https://www.writethedocs.org/guide/writing/beginners-guide-to-docs/)**
-- **[Markdown Cheat Sheet](https://www.markdownguide.org/cheat-sheet/)**
-- **[The Art of Writing Good Documentation](https://medium.com/analysts-corner/the-art-of-writing-good-documentation-6e4ce4cd3126)**
-- **[YouTube: Writing effective documentation | Beth Aitman](https://www.youtube.com/watch?v=R6zeikbTgVc)**
-- **[YouTube: A practical guide to making good documentation | Beth Aitman](https://www.youtube.com/watch?v=8TD-20Mb_7M)**
-
----
-
 ## 11. Demo Script Template (NEW)
 
 **Goal:** 5-minute walkthrough showing your best work
@@ -407,4 +388,21 @@ Thanks for watching! Questions welcome."
 - <20: Needs more work ❌
 
 ---
+
+## 14. Additional Resources
+
+**Video Tutorials:**
+- **[Event-Driven Architecture Explained](https://www.youtube.com/watch?v=DtuVN5g_e3k)**
+- **[Event-Driven Architecture in the Real World](https://www.youtube.com/watch?v=ksRCq0BJef8)**
+- **[Event-Driven Microservices](https://www.youtube.com/watch?v=moCcKZ_eHHs)**
+
+**Technical Documentation:**
+- **[Apache Kafka Documentation](https://kafka.apache.org/documentation/)**
+- **[RabbitMQ Concepts](https://www.rabbitmq.com/tutorials/amqp-concepts.html)**
+- **[AWS Event Bridge Patterns](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-event-patterns.html)**
+- **[Technical Documentation Best Practices](https://www.writethedocs.org/guide/writing/beginners-guide-to-docs/)**
+- **[Markdown Cheat Sheet](https://www.markdownguide.org/cheat-sheet/)**
+- **[The Art of Writing Good Documentation](https://medium.com/analysts-corner/the-art-of-writing-good-documentation-6e4ce4cd3126)**
+- **[YouTube: Writing effective documentation | Beth Aitman](https://www.youtube.com/watch?v=R6zeikbTgVc)**
+- **[YouTube: A practical guide to making good documentation | Beth Aitman](https://www.youtube.com/watch?v=8TD-20Mb_7M)**
 

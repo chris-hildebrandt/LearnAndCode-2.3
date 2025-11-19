@@ -8,6 +8,9 @@ using TaskFlowAPI.Entities; // We need access to the TaskEntity to check its Due
 
 namespace TaskFlowAPI.Services.Tasks.Filters;
 
+// CODE SMELL: Data Clumps (Clean Code Ch 17, p. 291)
+// These two parameters (start, end) are always passed together and represent a single concept: "date range".
+// Refactor by: Create DateRange class to encapsulate these parameters.
 /// <summary>
 /// A specific implementation of ITaskFilter that checks if a task's due date
 /// falls within a given start and end date range.

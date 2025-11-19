@@ -23,136 +23,228 @@ The final version of the TaskFlowAPI will include the following enhancements:
 
 The final architecture will be a more refined version of the initial N-tier architecture, with a clear separation of concerns and a focus on dependency inversion. The application will be composed of small, focused components that are easy to test and maintain.
 
-## 4. UML Diagram (Future State)
+## 4. Architecture Diagrams
 
-The following UML diagram illustrates the final structure of the TaskFlowAPI project.
+### 4.1 Future State Class Diagram (Mermaid)
 
-```plantuml
-@startuml
-' skinparam to make it look better
-skinparam classAttributeIconSize 0
-skinparam style strictuml
-skinparam class {
-    BackgroundColor LightBlue
-    ArrowColor RoyalBlue
-    BorderColor RoyalBlue
-}
-hide empty members
+The following Mermaid class diagram illustrates the final structure of the TaskFlowAPI project after 23 weeks of development.
 
-package "Controllers" {
+classDiagram
+    %% Controllers Layer
     class TasksController {
-        - readonly ITaskService _taskService
-        + async Task<IActionResult> GetAllTasks([FromQuery] TaskFilterParameters filters, CancellationToken ct)
-        ' ... other methods
+        -ITaskService _taskService
+        +GetAllTasksAsync(filters)
+        +GetTaskByIdAsync(id)
+        +CreateTaskAsync(request)
+        +UpdateTaskAsync(id, request)
+        +DeleteTaskAsync(id)
+        +CompleteTaskAsync(id)
     }
-}
-
-package "Services" {
-    interface ITaskService {
-        + Task<PagedResponse<TaskDto>> GetAll(TaskFilterParameters filters, CancellationToken ct)
-        ' ... other methods
+    
+    class ReportsController {
+        -ITaskService _taskService
+        +GenerateProjectSummaryReport(projectId)
     }
-
+    
+    %% Services Layer
+    class ITaskService {
+        <<interface>>
+        +GetAll(filters, pagination)
+        +GetById(id)
+        +Create(request)
+        +Update(id, request)
+        +Delete(id)
+        +Complete(id)
+    }
+    
     class TaskService {
-        - readonly ITaskReader _taskReader
-        - readonly ITaskWriter _taskWriter
-        - readonly ITaskFilterFactory _taskFilterFactory
-        - readonly ITaskFactory _taskFactory
-        - readonly ISystemClock _systemClock
-        - readonly ILogger<TaskService> _logger
-        ' ... other dependencies
+        -ITaskReader _taskReader
+        -ITaskWriter _taskWriter
+        -ITaskFilterFactory _filterFactory
+        -ITaskFactory _taskFactory
+        -ITaskMapper _mapper
+        -ITaskBusinessRules _businessRules
+        -ISystemClock _clock
+        -ILogger _logger
+        +GetAll()
+        +GetById()
+        +Create()
+        +Update()
+        +Delete()
+        +Complete()
     }
-}
-
-package "Repositories" {
-    interface ITaskReader {
-        + Task<List<TaskEntity>> GetAllAsync(CancellationToken ct)
-        + Task<TaskEntity?> GetByIdAsync(int id, CancellationToken ct)
+    
+    %% Repository Interfaces (CQRS Pattern)
+    class ITaskReader {
+        <<interface>>
+        +GetAllAsync()
+        +GetByIdAsync()
+        +GetByProjectIdAsync()
     }
-
-    interface ITaskWriter {
-        + Task<TaskEntity> CreateAsync(TaskEntity entity, CancellationToken ct)
-        + Task UpdateAsync(TaskEntity entity, CancellationToken ct)
-        + Task DeleteAsync(TaskEntity entity, CancellationToken ct)
+    
+    class ITaskWriter {
+        <<interface>>
+        +CreateAsync()
+        +UpdateAsync()
+        +DeleteAsync()
     }
-
+    
     class TaskRepository {
-        - readonly TaskFlowDbContext _dbContext
+        -TaskFlowDbContext _dbContext
+        +GetAllAsync()
+        +GetByIdAsync()
+        +CreateAsync()
+        +UpdateAsync()
+        +DeleteAsync()
     }
-}
-
-package "Entities" {
+    
+    %% Filter Strategy Pattern
+    class ITaskFilter {
+        <<interface>>
+        +IsMatch(task) bool
+    }
+    
+    class StatusTaskFilter {
+        -bool _completed
+        +IsMatch()
+    }
+    
+    class PriorityTaskFilter {
+        -HashSet~int~ _priorities
+        +IsMatch()
+    }
+    
+    class DueDateTaskFilter {
+        -DateTime? _start
+        -DateTime? _end
+        +IsMatch()
+    }
+    
+    class CompositeTaskFilter {
+        -IReadOnlyCollection~ITaskFilter~ _filters
+        +IsMatch()
+    }
+    
+    class ITaskFilterFactory {
+        <<interface>>
+        +Create(parameters) ITaskFilter
+    }
+    
+    class TaskFilterFactory {
+        +Create()
+    }
+    
+    %% Factory Pattern
+    class ITaskFactory {
+        <<interface>>
+        +CreateNewTask(request) TaskEntity
+    }
+    
+    class TaskFactory {
+        +CreateNewTask()
+    }
+    
+    %% Supporting Services
+    class ITaskMapper {
+        <<interface>>
+        +ToDto(entity) TaskDto
+        +ToEntity(request) TaskEntity
+    }
+    
+    class TaskMapper {
+        +ToDto()
+        +ToEntity()
+    }
+    
+    class ITaskBusinessRules {
+        <<interface>>
+        +ValidateCanComplete(task)
+        +ValidateCanReopen(task)
+    }
+    
+    class TaskBusinessRules {
+        +ValidateCanComplete()
+        +ValidateCanReopen()
+    }
+    
+    %% Infrastructure
+    class ISystemClock {
+        <<interface>>
+        +DateTime UtcNow
+    }
+    
+    class UtcSystemClock {
+        +DateTime UtcNow
+    }
+    
+    class TaskFlowDbContext {
+        +DbSet~TaskEntity~ Tasks
+        +DbSet~ProjectEntity~ Projects
+    }
+    
+    %% Rich Domain Model
     class TaskEntity {
-        - string _title
-        - int _priority
-        + void Complete(DateTime completedAt)
-        + void Reopen()
-        + void UpdateDetails(string title, string? desc, DateTime? dueDate)
-        + static TaskEntity Create(...)
+        -string _title
+        -int _priority
+        +int Id
+        +string Title
+        +string Description
+        +int Priority
+        +DateTime? DueDate
+        +bool IsCompleted
+        +DateTime CreatedAt
+        +DateTime? CompletedAt
+        +int ProjectId
+        +ProjectEntity Project
+        +void Complete(DateTime)
+        +void Reopen()
+        +void UpdateDetails()
+        +static Create()
     }
-
+    
     class ProjectEntity {
+        +int Id
+        +string Name
+        +string Description
+        +ICollection~TaskEntity~ Tasks
     }
-}
-
-package "Filters" {
-    interface ITaskFilter {
-        + bool IsMatch(TaskEntity task)
-    }
-    class StatusTaskFilter
-    class PriorityTaskFilter
-    class DueDateTaskFilter
-    class CompositeTaskFilter
-    interface ITaskFilterFactory {
-        + ITaskFilter Create(TaskFilterParameters parameters)
-    }
-}
-
-package "Factories" {
-    interface ITaskFactory {
-        + TaskEntity CreateNewTask(CreateTaskRequest request)
-    }
-    class TaskFactory
-}
-
-package "Infrastructure" {
-    interface ISystemClock {
-        + DateTime UtcNow
-    }
-    class UtcSystemClock
-    interface ITaskCache {
-        + Task<PagedResponse<TaskDto>?> GetAsync(string key)
-        + Task SetAsync(string key, PagedResponse<TaskDto> response)
-    }
-    class MemoryTaskCache
-}
-
-TasksController --> ITaskService
-TaskService .up.|> ITaskService
-TaskService --> ITaskReader
-TaskService --> ITaskWriter
-TaskService --> ITaskFilterFactory
-TaskService --> ITaskFactory
-TaskService --> ISystemClock
-TaskService --> ITaskCache
-
-TaskRepository .up.|> ITaskReader
-TaskRepository .up.|> ITaskWriter
-TaskRepository --> TaskFlowDbContext
-
-TaskService -> TaskEntity
-
-ITaskFilterFactory -> ITaskFilter
-CompositeTaskFilter o-- ITaskFilter
-StatusTaskFilter .up.|> ITaskFilter
-PriorityTaskFilter .up.|> ITaskFilter
-DueDateTaskFilter .up.|> ITaskFilter
-
-TaskFactory .up.|> ITaskFactory
-TaskFactory --> TaskEntity
-
-UtcSystemClock .up.|> ISystemClock
-MemoryTaskCache .up.|> ITaskCache
-
-@enduml
+    
+    %% Relationships
+    TasksController --> ITaskService
+    ReportsController --> ITaskService
+    TaskService ..|> ITaskService
+    TaskService --> ITaskReader
+    TaskService --> ITaskWriter
+    TaskService --> ITaskFilterFactory
+    TaskService --> ITaskFactory
+    TaskService --> ITaskMapper
+    TaskService --> ITaskBusinessRules
+    TaskService --> ISystemClock
+    
+    TaskRepository ..|> ITaskReader
+    TaskRepository ..|> ITaskWriter
+    TaskRepository --> TaskFlowDbContext
+    
+    ITaskFilterFactory --> ITaskFilter
+    TaskFilterFactory ..|> ITaskFilterFactory
+    StatusTaskFilter ..|> ITaskFilter
+    PriorityTaskFilter ..|> ITaskFilter
+    DueDateTaskFilter ..|> ITaskFilter
+    CompositeTaskFilter --> ITaskFilter : contains
+    
+    TaskFactory ..|> ITaskFactory
+    TaskFactory --> TaskEntity
+    
+    TaskMapper ..|> ITaskMapper
+    TaskBusinessRules ..|> ITaskBusinessRules
+    UtcSystemClock ..|> ISystemClock
+    
+    TaskFlowDbContext --> TaskEntity
+    TaskFlowDbContext --> ProjectEntity
+    TaskEntity --> ProjectEntity
 ```
+
+### 4.2 Additional Diagrams
+
+For more detailed architecture diagrams including data flow, sequence diagrams, and component diagrams, see:
+- **[Complete Architecture Diagrams](../../../docs/architecture-diagrams.md)**

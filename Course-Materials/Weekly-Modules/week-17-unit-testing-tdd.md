@@ -95,12 +95,6 @@ dotnet test TaskFlowAPI.sln /p:CollectCoverage=true /p:CoverletOutputFormat=lcov
 - 15 min – Coverage run + PR/issue.
 **Total:** ~120 minutes.
 
-## 11. Additional Resources
-
-- **[Test-Driven Development Example](../Examples/TestDrivenDevelopment.md)**
-
----
-
 ## 11. Fix Broken Tests First Exercise (NEW - Start Here)
 
 **Goal:** Understand existing test infrastructure before writing new tests
@@ -447,4 +441,8 @@ public async Task CompleteTask_WhenNotCompleted_Succeeds()
 **Deliverable:** Add to journal in Section 9
 
 ---
+
+## 14. Additional Resources
+
+- **[Test-Driven Development Example](../Examples/TestDrivenDevelopment.md)**
 

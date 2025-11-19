@@ -19,92 +19,133 @@ The initial state of the TaskFlowAPI project is a minimal ASP.NET Core Web API w
 
 The initial architecture follows a basic N-tier pattern, with a clear separation of concerns between the controller, service, and repository layers. However, the implementation is incomplete, and the focus of the initial weeks is on improving the code quality and implementing the core functionality.
 
-## 4. UML Diagram (Initial State)
+## 4. Architecture Diagrams
 
-The following UML diagram illustrates the initial structure of the TaskFlowAPI project.
+### 4.1 Current State Class Diagram (Mermaid)
 
-```plantuml
-@startuml
-' skinparam to make it look better
-skinparam classAttributeIconSize 0
-skinparam style strictuml
-skinparam class {
-    BackgroundColor PaleGreen
-    ArrowColor SeaGreen
-    BorderColor SeaGreen
-}
-hide empty members
+The following Mermaid class diagram illustrates the initial structure of the TaskFlowAPI project.
 
-class TasksController {
-    - readonly ITaskService _taskService
-    + TasksController(ITaskService taskService)
-    + async Task<IActionResult> GetAllTasks(CancellationToken ct)
-    + async Task<IActionResult> GetTaskById(int id, CancellationToken ct)
-    + async Task<IActionResult> CreateTask(CreateTaskRequest request, CancellationToken ct)
-    + async Task<IActionResult> UpdateTask(int id, UpdateTaskRequest request, CancellationToken ct)
-    + async Task<IActionResult> DeleteTask(int id, CancellationToken ct)
-}
-
-interface ITaskService {
-    + Task<List<TaskDto>> GetAll(CancellationToken ct)
-    + Task<TaskDto?> Get(int id, CancellationToken ct)
-    + Task<TaskDto> Add(CreateTaskRequest request, CancellationToken ct)
-    + Task Update(int id, UpdateTaskRequest request, CancellationToken ct)
-    + Task Delete(int id, CancellationToken ct)
-}
-
-class TaskService {
-    - readonly ITaskRepository _taskRepository
-    - readonly ILogger<TaskService> _logger
-    + TaskService(ITaskRepository taskRepository, ILogger<TaskService> logger)
-    ' Methods throw NotImplementedException
-}
-
-interface ITaskRepository {
-    + Task<List<TaskEntity>> GetAllAsync(CancellationToken ct)
-    + Task<TaskEntity?> GetByIdAsync(int id, CancellationToken ct)
-    + Task<TaskEntity> CreateAsync(TaskEntity entity, CancellationToken ct)
-    + Task UpdateAsync(TaskEntity entity, CancellationToken ct)
-    + Task DeleteAsync(TaskEntity entity, CancellationToken ct)
-}
-
-class TaskRepository {
-    - readonly TaskFlowDbContext _dbContext
-    + TaskRepository(TaskFlowDbContext dbContext)
-    ' Methods throw NotImplementedException
-}
-
-class TaskEntity {
-    + int Id
-    + string Title
-    + string? Description
-    + int Priority
-    + DateTime? DueDate
-    + bool IsCompleted
-    + int ProjectId
-    + ProjectEntity? Project
-}
-
-class ProjectEntity {
-    + int Id
-    + string Name
-    + string? Description
-    + ICollection<TaskEntity> Tasks
-}
-
-class TaskFlowDbContext {
-    + DbSet<TaskEntity> Tasks
-    + DbSet<ProjectEntity> Projects
-}
-
-TasksController --> ITaskService
-TaskService .up.|> ITaskService
-TaskService --> ITaskRepository
-TaskRepository .up.|> ITaskRepository
-TaskRepository --> TaskFlowDbContext
-TaskRepository -- TaskEntity
-TaskFlowDbContext -- TaskEntity
-TaskFlowDbContext -- ProjectEntity
-TaskEntity -- ProjectEntity
-@enduml
+classDiagram
+    %% Controllers Layer
+    class TasksController {
+        -ITaskService _taskService
+        +GetAllTasksAsync()
+        +GetTaskByIdAsync()
+        +CreateTaskAsync()
+        +UpdateTaskAsync()
+        +DeleteTaskAsync()
+    }
+    
+    class ReportsController {
+        -ITaskService _taskService
+        +GenerateProjectSummaryReport()
+    }
+    
+    %% Services Layer
+    class ITaskService {
+        <<interface>>
+        +GetAll()
+        +Get()
+        +Add()
+        +Update()
+        +Delete()
+    }
+    
+    class TaskService {
+        -ITaskRepository _taskRepository
+        -ILogger _logger
+        +GetAll()
+        +Get()
+        +Add()
+        +Update()
+        +Delete()
+        -MapToDto()
+        -MapToEntity()
+    }
+    
+    %% Repositories Layer
+    class ITaskRepository {
+        <<interface>>
+        +GetAllAsync()
+        +GetByIdAsync()
+        +CreateAsync()
+        +UpdateAsync()
+        +DeleteAsync()
+    }
+    
+    class TaskRepository {
+        -TaskFlowDbContext _dbContext
+        +GetAllAsync()
+        +GetByIdAsync()
+        +CreateAsync()
+        +UpdateAsync()
+        +DeleteAsync()
+    }
+    
+    %% Data Layer
+    class TaskFlowDbContext {
+        +DbSet~TaskEntity~ Tasks
+        +DbSet~ProjectEntity~ Projects
+    }
+    
+    %% Entities
+    class TaskEntity {
+        +int Id
+        +string Title
+        +string Description
+        +int Priority
+        +DateTime? DueDate
+        +bool IsCompleted
+        +DateTime CreatedAt
+        +DateTime? CompletedAt
+        +int ProjectId
+        +ProjectEntity Project
+    }
+    
+    class ProjectEntity {
+        +int Id
+        +string Name
+        +string Description
+        +ICollection~TaskEntity~ Tasks
+    }
+    
+    %% DTOs
+    class TaskDto {
+        +int Id
+        +string Title
+        +string Description
+        +int Priority
+        +DateTime? DueDate
+        +bool IsCompleted
+        +DateTime CreatedAt
+        +DateTime? CompletedAt
+        +int ProjectId
+        +string ProjectName
+    }
+    
+    class CreateTaskRequest {
+        +string Title
+        +string Description
+        +int Priority
+        +DateTime? DueDate
+        +int? ProjectId
+    }
+    
+    %% Relationships
+    TasksController --> ITaskService : uses
+    ReportsController --> ITaskService : uses
+    TaskService ..|> ITaskService : implements
+    TaskService --> ITaskRepository : uses
+    TaskRepository ..|> ITaskRepository : implements
+    TaskRepository --> TaskFlowDbContext : uses
+    TaskFlowDbContext --> TaskEntity : contains
+    TaskFlowDbContext --> ProjectEntity : contains
+    TaskEntity --> ProjectEntity : belongs to
+    TaskService --> TaskDto : creates
+    TaskService --> CreateTaskRequest : accepts
 ```
+
+### 4.2 Additional Diagrams
+
+For more detailed architecture diagrams including data flow, sequence diagrams, and component diagrams, see:
+- **[Complete Architecture Diagrams](../../../docs/architecture-diagrams.md)**

@@ -46,6 +46,10 @@ public class TaskRepository : ITaskRepository
         throw new NotImplementedException("Week 8: Implement repository read operations.");
     }
 
+    // CODE SMELL: Primitive Obsession (Clean Code Ch 17, p. 292)
+    // Using int for ID instead of a type-safe TaskId value object.
+    // This allows invalid values (negative, zero) and makes code less type-safe.
+    // Refactor by: Create TaskId value object class (advanced refactoring).
     /// <summary>
     /// This method will contain the logic to find a single task by its ID in the database.
     /// TODO Week 8: Query for a single task. Include the Project navigation property.

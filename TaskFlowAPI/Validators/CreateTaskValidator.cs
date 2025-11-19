@@ -20,6 +20,10 @@ namespace TaskFlowAPI.Validators;
 /// </summary>
 public class CreateTaskValidator : AbstractValidator<CreateTaskRequest>
 {
+    // CODE SMELL: Comments (Clean Code Ch 17, p. 297)
+    // This comment explains what code should do, but the code doesn't exist yet.
+    // Once validation rules are implemented, this comment becomes redundant.
+    // Refactor by: Remove comment once code is implemented (code should be self-explanatory).
     /// <summary>
     /// The constructor is where you define all the validation rules for the object.
     /// </summary>
