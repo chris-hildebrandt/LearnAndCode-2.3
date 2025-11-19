@@ -99,14 +99,77 @@ dotnet test TaskFlowAPI.sln
 ## 10. Time Estimate
 
 - 45 min – Read `README.md` + Quality Manifesto + Clean Code chapter.
+- 15 min – Architecture Overview (Section 11) - Review diagrams
 - 10 min – Fork + clone repo.
 - 10 min – Environment setup + build/test verification.
-- 30 min – Code Smell Scavenger Hunt (NEW)
+- 30 min – Code Smell Scavenger Hunt (Section 12)
 - 20 min – Journal + discussion prep (updated questions)
 - 10 min – Create PR/issue.
-**Total:** ~2 hours 5 minutes.
+**Total:** ~2 hours 20 minutes.
 
-## 11. Code Smell Scavenger Hunt (NEW)
+## 11. Architecture Overview (NEW)
+
+**Goal:** Understand the TaskFlowAPI structure before diving into code
+
+**Time:** 15 minutes
+
+### Visual Architecture Reference
+
+Before exploring the codebase, review these architecture diagrams to understand the big picture:
+
+1. **Current State Class Diagram** - Shows the initial structure (Weeks 1-8)
+   - See: `Course-Materials/Project-Documentation/TaskFlowAPI_Current_State.md` (Section 4.1)
+   - Or: `docs/architecture-diagrams.md` (Section 1)
+
+2. **Future State Class Diagram** - Shows the target architecture (Week 23)
+   - See: `Course-Materials/Project-Documentation/TaskFlowAPI_Future_State.md` (Section 4.1)
+   - Or: `docs/architecture-diagrams.md` (Section 2)
+
+3. **Data Flow Diagram** - Shows how requests flow through the system
+   - See: `docs/architecture-diagrams.md` (Section 3)
+
+4. **Component Diagram** - Shows high-level components and dependencies
+   - See: `docs/architecture-diagrams.md` (Section 5)
+
+5. **Architecture Evolution Timeline** - Shows how the architecture evolves over 23 weeks
+   - See: `docs/architecture-diagrams.md` (Section 6)
+
+### Key Architecture Concepts
+
+**Layered Architecture:**
+- **Controllers** - Handle HTTP requests/responses
+- **Services** - Business logic and orchestration
+- **Repositories** - Data access abstraction
+- **Entities** - Domain models (database tables)
+
+**Design Patterns You'll Learn:**
+- Repository Pattern (Week 8)
+- Strategy Pattern (Week 12 - Filters)
+- Factory Pattern (Week 19)
+- CQRS Pattern (Week 20 - Reader/Writer separation)
+
+**SOLID Principles:**
+- Single Responsibility (Week 11)
+- Open/Closed (Week 12)
+- Liskov Substitution (Week 13)
+- Interface Segregation (Week 14)
+- Dependency Inversion (Week 15)
+
+### Your Task
+
+1. Open `docs/architecture-diagrams.md`
+2. Review the Current State Class Diagram
+3. Compare it to the Future State Class Diagram
+4. Note the differences - these are what you'll build over 23 weeks!
+
+**Questions to Consider:**
+- What patterns do you recognize?
+- What's missing in the current state?
+- How does the architecture support testability?
+
+---
+
+## 12. Code Smell Scavenger Hunt (NEW)
 
 **Goal:** Build a mental inventory of "code smells" you'll fix over 23 weeks.
 
@@ -195,7 +258,15 @@ Based on your scavenger hunt, predict:
 
 ---
 
-## 12. Getting Help
+## 13. Additional Resources
+
+- **[Architecture Diagrams](../../../docs/architecture-diagrams.md)** - Complete visual reference for TaskFlowAPI architecture
+- **[TaskFlowAPI Current State](../Project-Documentation/TaskFlowAPI_Current_State.md)** - Detailed current state analysis
+- **[TaskFlowAPI Future State](../Project-Documentation/TaskFlowAPI_Future_State.md)** - Target architecture vision
+
+---
+
+## 14. Getting Help
 
 (please fill in the blanks)
 - Team chat `#_____` for quick questions.

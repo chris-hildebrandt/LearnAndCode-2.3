@@ -2,6 +2,23 @@
 
 This document provides a high-level overview of the key files in the root of the `TaskFlowAPI` project and the overall solution structure. These files are fundamental to how the .NET project is organized, configured, and launched.
 
+## 📊 Architecture Diagrams
+
+For visual representations of the TaskFlowAPI architecture, see:
+- **[Architecture Diagrams](../../docs/architecture-diagrams.md)** - Complete set of Mermaid diagrams including:
+  - Current State Class Diagram
+  - Future State Class Diagram (Week 23 vision)
+  - Data Flow Diagram
+  - Sequence Diagrams
+  - Component Diagram
+  - Architecture Evolution Timeline
+
+These diagrams help visualize:
+- How components interact
+- Data flow through the system
+- Architecture evolution over 23 weeks
+- Design patterns in use
+
 ---
 
 ### `TaskFlowAPI.sln` (Solution File)
