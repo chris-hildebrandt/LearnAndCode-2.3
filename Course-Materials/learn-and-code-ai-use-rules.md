@@ -55,7 +55,7 @@ Treat the AI as a junior pair programmer. Your role is to be the senior develope
 ## Final Advice
 
 This can be hard. You may become frustrated. That's normal and means you're learning.
-AI is a necessary tool in the software development environment today, but it will hinder rather than help if it is used blindly or without understanding the code you are working with, and the bigger picture that the LLM context cannot contain. Develop your own understanding first, and your ability to use your tools second.
+AI is a necessary tool in the software development environment today, but it will hinder rather than help if it is used blindly or without understanding the code you are working with and the bigger picture that the LLM context cannot contain. Develop your own understanding first, and your ability to use your tools second.
 
 The goal is to:
 1. Understand the fundamentals deeply

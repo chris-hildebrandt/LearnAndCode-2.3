@@ -24,7 +24,7 @@ This repository is designed to be forked by each member of the cohort, and conta
 - `TaskFlowAPI/` – ASP.NET Core Web API with intentional code smells, TODOs, and EF Core SQLite database.
 - `TaskFlowAPI.Tests/` – xUnit project with example tests and Week 17 scaffolding.
 - `Course-Materials/Weekly-Modules/*.md` – Weekly Journals and Discussion Prep to be filled out in each weeks markdown file.
-- `.github/` – PR template and weekly submission issue template to standardise reviews.
+- `.github/` –  Weekly PR template to standardize submissions.
 
 By Week 23 you must deliver:
 - Clean architecture (Controller → Service → Repository) with SOLID applied.
@@ -34,20 +34,23 @@ By Week 23 you must deliver:
 
 ## Expectations
 
-- **Job training, not school**: No partial credit. Your code either works or it doesn’t.
-- **Time-boxed**: Each assignment is scoped to 1–2 hours. Verify and call out if it takes longer.
-- **Get unstuck fast**: Blocked >30 minutes? Ask in team chat, tap the shoulder of the person sitting next to you, or meet with your mentor. DO NOT STAY BLOCKED for more than 30 minutes! No exceptions.
-- **Agile discussions**: Our weekly meetings are not lectures, we will have a standup, followed by on-topic discussion followed by a retro. Weekly standup + retro questions are built into every doc. Come prepared.
+- **This is Job training, not school**: There is no partial credit, your code either works or it doesn’t. 
+- **Time-boxed**: Each week's reading and assignment is designed to take about 2 hours to complete. Please track your time spent and call out if the work takes longer. We understand that you may have pressing work for our partners, this course is designed to be manageable while working full-time on a partner project.
+- **Get unstuck fast**: Blocked >30 minutes? Ask in team chat, tap the shoulder of the person sitting next to you, or meet with your mentor. DO NOT STAY BLOCKED for more than 30 minutes! We require this with partner work as well as this course, you are responsible for your productivity. No exceptions.
+- **Agile discussions**: Our weekly meetings are not lectures, we will have a standup, followed by on-topic discussion followed by a retro. Weekly standup + retro questions are built into every doc. Come prepared!
 
 ## Support & Resources
 
-- `Course-Materials/Weekly-Modules/` includes Clean Code chapter summaries, standup prompts, testing instructions, and help paths.
+- `Course-Materials/Weekly-Modules/` includes reading assignments and development tasks (including step-by-step instructions), journal questions and standup discussion prompts, success criteria and testing instructions, and additional resources for further exploration.
 - `TaskFlowAPI.http` contains example requests for Postman or VS Code REST Client.
-- `Course-Materials/Readings/Quality Manifesto.pdf` and `Course-Materials/Project-Documentation/TaskFlowAPI_Project_Overview.md` explain the “why” behind every decision.
+- `Course-Materials/Readings/Quality Manifesto.pdf` explains the "why" behind every decision in this course, and `Course-Materials/About TaskFlowAPI` explains what we will be building for the hands-on project.
 
-## Contributing
+## Repository
 
-This repository is production-ready curriculum. You will merge changes only into your own branch/fork of the repo after the weekly review/discussion. Open a PR only when:
+This repository is production-ready curriculum. We will treat it like a live partner repo. You will merge changes only into your own branch/fork of the repo after the weekly review/discussion. Open a PR only when:
 - You validated the change with `dotnet build` and `dotnet test`.
 - Documentation, TODOs, and time estimates are updated together.
 - You followed the PR template in `.github/pull_request_template.md`.
+
+## Contributing
+- Learn and Code is constantly evolving to meet the needs of our developers. If you have suggestions, complaints, or feedback, please feel free to share so we can continue to improve this course for future cohorts!

@@ -46,7 +46,19 @@ public interface ITaskService
     /// <param name="request">The data needed to create the new task, wrapped in a CreateTaskRequest object.</param>
     /// <param name="cancellationToken">A token to allow the operation to be cancelled.</param>
     /// <returns>A Task that represents the asynchronous operation. The task result contains the newly created TaskDto.</returns>
-    Task<TaskDto> Add(CreateTaskRequest request, CancellationToken cancellationToken = default); // TODO: Rename.
+    Task<TaskDto> Add(CreateTaskRequest request, CancellationToken cancellationToken = default);
 
-    // TODO Week 4: Introduce Update/Delete method signatures with GOOD names.
+    // WEEK 4 TODO: Add UpdateTaskAsync and DeleteTaskAsync method signatures
+    // 
+    // UpdateTaskAsync:
+    //   - Return type: Task<TaskDto?> (nullable because task might not exist)
+    //   - Parameters: int taskId, UpdateTaskRequest request, CancellationToken cancellationToken = default
+    //   - Follow the async naming convention (ends with Async)
+    // 
+    // DeleteTaskAsync:
+    //   - Return type: Task (void async - nothing to return)
+    //   - Parameters: int taskId, CancellationToken cancellationToken = default
+    //   - Remember: Delete operations are idempotent (safe to call multiple times)
+    //
+    // Model your signatures after the existing methods above (GetAll, Get, Add).
 }

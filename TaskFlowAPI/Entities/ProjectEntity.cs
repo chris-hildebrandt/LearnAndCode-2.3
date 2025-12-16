@@ -15,6 +15,15 @@ namespace TaskFlowAPI.Entities;
 /// Represents a project in the database. This is a direct mapping to the `Projects` table.
 /// Week 7 scaffolding: students will enrich this entity with validation and helper methods.
 /// </summary>
+// CODE SMELL: Data Class (Clean Code Ch 17, p. 295)
+// This entity has only getters/setters with no behavior or domain logic.
+// It's a pure data container without domain methods (AddTask, RemoveTask, UpdateName, etc.).
+// Refactor by: Add domain behavior methods like AddTask, RemoveTask, UpdateDescription, etc.
+//
+// CODE SMELL: Feature Envy (Clean Code Ch 17, p. 291)
+// This class doesn't provide methods to work with its own name.
+// Other classes might implement validation/formatting of the name externally.
+// Refactor by: Add methods like ValidateName(), UpdateName(), GetDisplayName() to encapsulate the behavior.
 public class ProjectEntity
 {
     // TODO Week 7: Protect invariants (non-empty name, optional description length, etc.).

@@ -14,7 +14,7 @@ This week, we will focus on defining and managing boundaries in code, connecting
 
 ## 2. Reading & Resources (60 min)
 
-- **Clean Code Chapter 5: Formatting (pp. 77-96)** – emphasise readability, vertical openness, and logical grouping.
+- **Clean Code Chapter 5: Formatting (pp. 77-96)** – emphasize readability, vertical openness, and logical grouping.
 - **Clean Code Chapter 8 (Boundaries)** – Refresh boundary management concepts.
 - **[Designing Software with Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)** – Uncle Bob on modular architectures.
 - **[Reading Clean Code: Boundaries](https://medium.com/codex/reading-clean-code-week-5-boundaries-aba7fbefb861)** – Commentary on chapter application.
@@ -57,14 +57,16 @@ dotnet test TaskFlowAPI.sln
 
 - Directory structure reflects modules (`Controllers`, `Services/Tasks/…`, `Validators`, etc.).
 - No circular namespace dependencies.
-- DI registrations centralised via extension method.
+- DI registrations centralized via extension method.
 - Build/tests succeed; `git diff` shows moves not rewrites (use `git mv`).
 
 ## 8. Submission Process
 
-- Commit `Week 16 – file organization` (use `git mv` to preserve history).
-- PR summary includes tree snippet of new structure.
-- Weekly issue attaches screenshot from IDE solution explorer.
+1.  Create a new branch for your weekly work (e.g., `git checkout -b week-16-submission`).
+2.  Commit your changes to this branch (e.g., `git commit -m "feat: Complete Week 16 work"`).
+3.  Push the branch to your forked repository on GitHub.
+4.  On GitHub, create a Pull Request from your new branch to your `main` branch.
+5.  Review, approve, and merge your own Pull Request.
 
 ## 9. Journal and Discussion Prep
 
@@ -85,7 +87,8 @@ dotnet test TaskFlowAPI.sln
 - 60 min – Reading.
 - 10 min – Plan folder structure.
 - 35 min – Move files + update namespaces/DI.
-- 15 min – Build/test + PR/issue.
+- 20 min - Journal + discussion prep.
+- 15 min – Test => PR => Review => Merge.
 **Total:** ~60 minutes.
 
 ## 11. Additional Resources

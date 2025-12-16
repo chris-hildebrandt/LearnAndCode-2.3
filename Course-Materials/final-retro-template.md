@@ -7,7 +7,7 @@
 - `________________`
 - `________________`
 
-## Clean Code Principles Internalised
+## Clean Code Principles Internalized
 - `________________`
 
 ## Remaining Technical Debt / Next Steps

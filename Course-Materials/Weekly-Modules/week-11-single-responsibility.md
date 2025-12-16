@@ -24,6 +24,13 @@ This week, we are focusing on the Single Responsibility Principle (SRP) and how 
 - **Step 0:** Use SRP Smell Detector to identify violations (see Section 11 below) - 15 min
 - **Step 1:** Extract `TaskMapper` first (isolated, no side effects) - 30 min
 - **Step 2:** Extract `TaskBusinessRules` second (depends on entities) - 30 min
+
+Additional (optional) step:
+
+- Add `ITaskBusinessRules` interface
+
+   - Rationale: to keep business-rule dependencies mockable and aligned with full interface-based DI across the codebase, optionally extract an interface `ITaskBusinessRules` and update DI registration. This is a lightweight addition to Week 11 and will make later TDD and mocking (Week 17) simpler.
+   - Files to Modify: create `TaskFlowAPI/Services/Tasks/Rules/ITaskBusinessRules.cs` and update `TaskFlowAPI/Services/Tasks/Rules/TaskBusinessRules.cs` to implement the interface; register in `Program.cs`.
 - **Step 3:** Verify FluentValidation validators work via DI (no extraction needed) - 10 min
 - Update DI registrations and verify no behavior change
 
@@ -174,9 +181,11 @@ dotnet test TaskFlowAPI.sln
 
 ## 8. Submission Process
 
-- Commit `Week 11 – SRP refactor`.
-- PR summary outlines classes extracted and reasons.
-- Weekly issue includes diagram or bullet list of new responsibilities.
+1.  Create a new branch for your weekly work (e.g., `git checkout -b week-11-submission`).
+2.  Commit your changes to this branch (e.g., `git commit -m "feat: Complete Week 11 work"`).
+3.  Push the branch to your forked repository on GitHub.
+4.  On GitHub, create a Pull Request from your new branch to your `main` branch.
+5.  Review, approve, and merge your own Pull Request.
 
 ## 9. Journal and Discussion Prep
 
@@ -197,7 +206,8 @@ dotnet test TaskFlowAPI.sln
 - 70 min – Reading
 - 10 min – Identify responsibilities + plan.
 - 45 min – Extract classes + DI updates.
-- 15 min – Test + PR/issue.
+- 20 min - Journal + discussion prep.
+- 15 min – Test => PR => Review => Merge.
 **Total:** ~140 minutes.
 
 ## 11. SRP Smell Detector Framework (NEW)

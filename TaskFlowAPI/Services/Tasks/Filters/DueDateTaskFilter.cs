@@ -35,6 +35,12 @@ public class DueDateTaskFilter : ITaskFilter
         _end = end;
     }
 
+    // CODE SMELL: Primitive Obsession (Clean Code Ch 17, p. 292)
+    // Using nullable DateTime for range boundaries without validation or encapsulation.
+    // There's no guarantee that _start <= _end, allowing invalid filter states to be created.
+    // If _start is 2025-01-31 and _end is 2025-01-01, the filter will behave unexpectedly.
+    // Refactor by: Create a DateRange value object that enforces start <= end invariant.
+    
     /// <summary>
     /// This method contains the actual filtering logic.
     /// It checks if the provided task's DueDate falls within the [_start, _end] range.

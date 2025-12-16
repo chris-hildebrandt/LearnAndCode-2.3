@@ -65,9 +65,11 @@ dotnet test TaskFlowAPI.sln
 
 ## 8. Submission Process
 
-- Commit `Week 22 – caching & performance`.
-- PR summary includes caching strategy, TTL, and sample logs.
-- Weekly issue documents performance observations (stopwatch results optional).
+1.  Create a new branch for your weekly work (e.g., `git checkout -b week-22-submission`).
+2.  Commit your changes to this branch (e.g., `git commit -m "feat: Complete Week 22 work"`).
+3.  Push the branch to your forked repository on GitHub.
+4.  On GitHub, create a Pull Request from your new branch to your `main` branch.
+5.  Review, approve, and merge your own Pull Request.
 
 ## 9. Journal and Discussion Prep
 
@@ -81,14 +83,15 @@ dotnet test TaskFlowAPI.sln
 - *How did caching change the service design?*
 - *What risks exist if cache invalidation fails?*
 - *What metrics would you add in a production environment?*
-- *How will you test caching behaviour in automated builds?*
+- *How will you test caching behavior in automated builds?*
 
 ## 10. Time Estimate
 
 - 50 min – Reading.
 - 15 min – Design caching strategy.
 - 45 min – Implement cache + async audit.
-- 15 min – Testing/log verification + PR/issue.
+- 20 min - Journal + discussion prep.
+- 15 min – Test => PR => Review => Merge.
 **Total:** ~125 minutes.
 
 ## 11. Caching Examples & Patterns

@@ -44,6 +44,11 @@ builder.Services.AddSwaggerGen();
 
 // Here we register our `TaskFlowDbContext` with the DI container.
 // We configure it to use SQLite as the database provider and get the connection string from our configuration file.
+// CODE SMELL: Magic Strings (Clean Code Ch 17, G25)
+// The string "DefaultConnection" is a magic string used as a configuration key.
+// If this key name changes in appsettings.json, the code breaks silently or throws at runtime.
+// Magic strings are hard to find with refactoring tools and easy to misspell.
+// Refactor by: Extract configuration keys to named constants (private const string DefaultConnectionKey = "DefaultConnection").
 builder.Services.AddDbContext<TaskFlowDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 

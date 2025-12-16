@@ -2,11 +2,11 @@
 
 **Purpose:** Reference document for Week 18 students to understand intentional code smells added to the codebase.
 
-**Total Smells:** 24  
+**Total Smells:** 32  
 **Difficulty Distribution:**
-- Easy: 10 smells
-- Medium: 10 smells
-- Hard: 4 smells
+- Easy: 18 smells
+- Medium: 12 smells
+- Hard: 2 smells
 
 **How to Use:**
 1. Search codebase for `// CODE SMELL:` comments
@@ -110,7 +110,7 @@ Replace with Priority enum with behavior or Strategy pattern.
 **Location:** `TaskFlowAPI/Helpers/TaskHelper.cs`, line 35  
 **Type:** Long Method (Clean Code Ch 17, p. 288)  
 **Severity:** Medium  
-**Difficulty:** Easy
+**Difficulty:** Medium
 
 **Description:**
 The `CalculateDueDate` method is 25+ lines and does multiple things:
@@ -686,40 +686,286 @@ private const int TestTaskId = 42;
 
 **Expected Time to Fix:** 10-15 minutes
 
+## Smell #27: Magic Strings - Configuration Keys
+
+**Location:** `TaskFlowAPI/Program.cs`, line ~51  
+**Type:** Magic Strings (Clean Code Ch 17, G25)  
+**Severity:** Low  
+**Difficulty:** Easy
+
+**Description:**
+The configuration key "DefaultConnection" is hardcoded as a magic string. If the key is renamed in `appsettings.json`, the code breaks silently or throws at runtime without compile-time verification.
+
+**Why It's Bad:**
+- String magic values are not refactoring-safe
+- Easy to misspell or mistype
+- No compile-time verification of key names
+- Scattered throughout code, hard to find and change consistently
+
+**Suggested Refactoring:**
+Extract to named constant:
+```csharp
+private const string DefaultConnectionKey = "DefaultConnection";
+builder.Services.AddDbContext<TaskFlowDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString(DefaultConnectionKey)));
+```
+
+**Expected Time to Fix:** 10 minutes
+
+---
+
+## Smell #28: Data Class - ProjectEntity
+
+**Location:** `TaskFlowAPI/Entities/ProjectEntity.cs`, entire class  
+**Type:** Data Class (Clean Code Ch 17, p. 295)  
+**Severity:** Low  
+**Difficulty:** Medium
+
+**Description:**
+The `ProjectEntity` has only getters/setters with no behavior or domain logic. It's a pure data container without methods like `AddTask()`, `RemoveTask()`, `UpdateName()`, etc.
+
+**Why It's Bad:**
+- Violates object-oriented principles (encapsulation)
+- Logic that works with projects is scattered elsewhere
+- Missed opportunity for domain-driven design
+- No invariant protection (e.g., name length, task count limits)
+
+**Suggested Refactoring:**
+Add domain behavior methods:
+```csharp
+public void AddTask(TaskEntity task) { /* ... */ }
+public void RemoveTask(TaskEntity task) { /* ... */ }
+public void UpdateName(string newName) { /* ... */ }
+public void UpdateDescription(string newDescription) { /* ... */ }
+public int GetTaskCount() => Tasks.Count;
+public bool HasOverdueTasks() => Tasks.Any(t => !t.IsCompleted && t.DueDate < DateTime.UtcNow);
+```
+
+**Expected Time to Fix:** 30-45 minutes
+
+---
+
+## Smell #29: Feature Envy - ProjectEntity Name Property
+
+**Location:** `TaskFlowAPI/Entities/ProjectEntity.cs`, line 24  
+**Type:** Feature Envy (Clean Code Ch 17, p. 291)  
+**Severity:** Low  
+**Difficulty:** Medium
+
+**Description:**
+The `ProjectEntity` doesn't provide methods to work with its own name. Other classes validate, format, or manipulate the name externally instead of encapsulating that behavior.
+
+**Why It's Bad:**
+- Logic for working with project names is scattered throughout codebase
+- Violates encapsulation
+- Multiple places might implement name validation inconsistently
+- Harder to maintain (changes in multiple places)
+
+**Suggested Refactoring:**
+Add methods to encapsulate name behavior:
+```csharp
+public void ValidateName(string name)
+{
+    if (string.IsNullOrWhiteSpace(name))
+        throw new ArgumentException("Name cannot be empty");
+    if (name.Length > 200)
+        throw new ArgumentException("Name cannot exceed 200 characters");
+}
+
+public string GetDisplayName() => Name.Trim();
+
+public void UpdateName(string newName)
+{
+    ValidateName(newName);
+    Name = newName;
+}
+```
+
+**Expected Time to Fix:** 20-30 minutes
+
+---
+
+## Smell #30: Primitive Obsession - DueDateTaskFilter Date Range
+
+**Location:** `TaskFlowAPI/Services/Tasks/Filters/DueDateTaskFilter.cs`, lines 18-22  
+**Type:** Primitive Obsession (Clean Code Ch 17, p. 292)  
+**Severity:** Medium  
+**Difficulty:** Hard
+
+**Description:**
+Using nullable `DateTime` for range boundaries without validation or encapsulation. There's no guarantee that `_start <= _end`, allowing invalid filter states like `start = 2025-01-31, end = 2025-01-01`.
+
+**Why It's Bad:**
+- No invariant protection (start must be <= end)
+- Filter behavior becomes unpredictable with invalid dates
+- Validation logic scattered wherever filters are created
+- No type safety for the concept of "date range"
+
+**Suggested Refactoring:**
+Create a `DateRange` value object:
+```csharp
+public record DateRange
+{
+    public DateTime? Start { get; }
+    public DateTime? End { get; }
+    
+    public DateRange(DateTime? start, DateTime? end)
+    {
+        if (start.HasValue && end.HasValue && start.Value > end.Value)
+            throw new ArgumentException("Start date must be <= end date");
+        Start = start;
+        End = end;
+    }
+}
+
+// Then use in filter:
+public DueDateTaskFilter(DateRange dateRange) { /* ... */ }
+```
+
+**Expected Time to Fix:** 45-60 minutes (advanced)
+
+---
+
+## Smell #31: Duplicate Code - UpdateTaskValidator vs CreateTaskValidator
+
+**Location:** `TaskFlowAPI/Validators/UpdateTaskValidator.cs`, entire class  
+**Type:** Duplicate Code (Clean Code Ch 17, p. 289)  
+**Severity:** Medium  
+**Difficulty:** Medium
+
+**Description:**
+The `UpdateTaskValidator` will likely have similar rule definitions (property validation chains) as `CreateTaskValidator`. For example, both validate Title length, Priority range, and DueDate validity. Only the conditions (required vs. optional) differ.
+
+**Why It's Bad:**
+- Violates DRY principle
+- Changes to validation rules must be made in two places
+- Risk of inconsistency (e.g., update allows title of 500 chars, create allows 200)
+- Harder to maintain
+
+**Suggested Refactoring:**
+Extract common validation rules:
+```csharp
+public static class TaskValidationRules
+{
+    public static IRuleBuilderOptions<T, string> ValidateTitle<T>(
+        this IRuleBuilder<T, string> rule)
+        => rule
+            .NotEmpty().WithMessage("Title is required")
+            .MaximumLength(200).WithMessage("Title cannot exceed 200 characters");
+    
+    public static IRuleBuilderOptions<T, int> ValidatePriority<T>(
+        this IRuleBuilder<T, int> rule)
+        => rule
+            .GreaterThanOrEqualTo(0).WithMessage("Priority must be 0-5")
+            .LessThanOrEqualTo(5);
+}
+
+// Then in both validators:
+RuleFor(x => x.Title).ValidateTitle();
+RuleFor(x => x.Priority).ValidatePriority();
+```
+
+**Expected Time to Fix:** 30-45 minutes
+
+---
+
+## Smell #32: Abbreviations & Unclear Names - TasksController
+
+**Location:** `TaskFlowAPI/Controllers/TasksController.cs`, entire class  
+**Type:** Abbreviations & Unclear Names (Clean Code Ch 2, pp. 17-48)
+**Severity:** Medium
+**Difficulty:** Medium
+**Description:**
+The controller uses multiple abbreviations and unclear names:
+- Field: `svc` (should be `taskService`)
+- Parameter: `s` (should be `taskService`)
+- Variables: `t` (should be `allTasks` or `tasks`)
+- Variables: `dt` (should be `createdTask` or `newTaskDto`)
+- Parameter: `req` (should be `createTaskRequest`)
+- Methods: `Get()` (should be `GetAllTasks()`)
+- Methods: `GetOne()` (should be `GetTaskById()`)
+- Methods: `Add()` (should be `CreateTask()`)
+
+**Why It's Bad:**
+- Names are not searchable (if you search for "svc", you get noise)
+- Names are not pronounceable (can't discuss "essVeeC" in code review)
+- Abbreviations obscure intent and confuse new team members
+- Single-letter variables are ambiguous and often misleading
+
+**Suggested Refactoring:**
+Apply Clean Code Chapter 2 principles:
+1. Replace abbreviations: `svc` → `taskService`, `req` → `createTaskRequest`, `t` → `allTasks`, `dt` → `createdTask`
+2. Clarify method names: `Get()` → `GetAllTasks()`, `GetOne()` → `GetTaskById()`, `Add()` → `CreateTask()`
+3. Ensure names are pronounceable and searchable
+4. Use no single-letter variables (except loop counters)
+
+**Example:**
+```csharp
+private readonly ITaskService _taskService;
+
+public TasksController(ITaskService taskService)
+{
+    _taskService = taskService;
+}
+
+[HttpGet]
+public async Task<IActionResult> GetAllTasks(CancellationToken cancellationToken)
+{
+    var allTasks = await _taskService.GetAll(cancellationToken);
+    return Ok(allTasks);
+}
+
+[HttpPost]
+public async Task<IActionResult> CreateTask([FromBody] CreateTaskRequest createRequest, CancellationToken cancellationToken)
+{
+    var createdTask = await _taskService.Add(createRequest, cancellationToken);
+    return CreatedAtAction(nameof(GetTaskById), new { id = createdTask.Id }, createdTask);
+}
+```
+
+**Expected Time to Fix:** 30-45 minutes
+
 ---
 
 ## Summary by Difficulty
 
-### Easy (10 smells - 5-20 minutes each)
+### Easy (18 smells)
 - Smell #3: Switch Statements
+- Smell #5: Duplicate Code (Validation)
+- Smell #7: Feature Envy
 - Smell #9: Dead Code
 - Smell #10: Comments (TaskHelper)
 - Smell #11: Lazy Class
 - Smell #12: Speculative Generality
+- Smell #14: Duplicate Code (Filtering)
 - Smell #15: Magic Numbers (Percentage)
 - Smell #16: Magic Numbers (Priority)
 - Smell #17: Magic Numbers (Decimal)
+- Smell #18: Feature Envy (Mapping)
+- Smell #19: Duplicate Code (Mapping)
 - Smell #22: Comments (Validator)
-- Smell #25: Comments (Tests)
+- Smell #24: Obscure Test - Test Name
+- Smell #25: Comments (Redundant Test Comments)
 - Smell #26: Magic Numbers (Tests)
+- Smell #27: Magic Strings (Configuration Keys)
 
-### Medium (10 smells - 20-45 minutes each)
+### Medium (12 smells)
 - Smell #1: Large Class
 - Smell #2: Primitive Obsession (Priority)
 - Smell #4: Long Method (CalculateDueDate)
-- Smell #5: Duplicate Code (Validation)
 - Smell #6: Long Parameter List
-- Smell #7: Feature Envy
 - Smell #8: Data Clumps (Date Range)
 - Smell #13: Long Method (Report)
-- Smell #14: Duplicate Code (Filtering)
-- Smell #18: Feature Envy (Mapping)
-- Smell #19: Duplicate Code (Mapping)
-- Smell #20: Data Class
-- Smell #21: Data Clumps (Filter)
+- Smell #20: Data Class - TaskDto
+- Smell #21: Data Clumps (Date Range)
+- Smell #28: Data Class - ProjectEntity
+- Smell #29: Feature Envy - ProjectEntity Name Property
+- Smell #31: Duplicate Code - UpdateTaskValidator vs CreateTaskValidator
+- Smell #32: Abbreviations & Unclear Names - TasksController
 
-### Hard (4 smells - 45-90 minutes each)
-- Smell #23: Primitive Obsession (TaskId) - Advanced refactoring
+### Hard (2 smells)
+- Smell #23: Primitive Obsession - Task ID
+- Smell #30: Primitive Obsession - DueDateTaskFilter Date Range
 
 ---
 

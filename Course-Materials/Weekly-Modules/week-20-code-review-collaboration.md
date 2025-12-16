@@ -38,7 +38,7 @@ This week, we are focusing on the importance of code review in creating high-qua
 ### For Cohort Members (With Classmates):
 1. Branch `week-20/<your-name>` (only for documentation changes).
 2. Review two classmates' Week 19 PRs.
-3. Focus comments on behaviour ("This breaks filtering when priority is empty because…").
+3. Focus comments on behavior ("This breaks filtering when priority is empty because…").
 4. Provide at least one suggestion comment (`suggestion` block or code snippet).
 5. On your PR, respond to every comment within 24 hours—commit fixes as needed.
 6. Capture review activity in the Review Log below.
@@ -109,16 +109,19 @@ This week, we are focusing on the importance of code review in creating high-qua
 - Self-review checklist completed for your Week 17-19 PRs.
 
 ## 8. Submission Process
-- Commit documentation update `Week 20 – review log`.
-- PR summary includes links to reviews you performed and confirmation your PR comments resolved.
-- Weekly issue attaches screenshot of one review comment thread (or your `my-week-20-review.md` for solo learners).
+
+1.  Create a new branch for your weekly work (e.g., `git checkout -b week-20-submission`).
+2.  Commit your changes to this branch (e.g., `git commit -m "feat: Complete Week 20 work"`).
+3.  Push the branch to your forked repository on GitHub.
+4.  On GitHub, create a Pull Request from your new branch to your `main` branch.
+5.  Review, approve, and merge your own Pull Request.
 
 ## 9. Journal and Discussion Prep
 
 (Use this section as a journal of your learning. Answer the questions below after completing the reading and assignment. ALSO record any questions or comments you would like to bring up during this week's discussion.)
 
 Journal:
-*Review Highlights:* Summarise the most impactful comment you left on a peer's PR (or sample PR).
+*Review Highlights:* Summarize the most impactful comment you left on a peer's PR (or sample PR).
 
 *Feedback Response:* Reflect on the toughest comment received on your PR and how you resolved it (or toughest issue you identified in sample PRs).
 
@@ -136,7 +139,8 @@ Discussion Prep:
 - 30 min – Review PR #1.
 - 30 min – Review PR #2.
 - 30 min – Review PR #3 (solo learners).
-- 10 min – Respond to comments on your PR + documentation.
+- 20 min - Journal + discussion prep.
+- 15 min – Test => PR => Review => Merge.
 **Total:** ~120-150 minutes (spread through the week).
 
 ## 11. Comment Quality Examples

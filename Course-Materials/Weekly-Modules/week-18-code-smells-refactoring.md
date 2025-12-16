@@ -9,26 +9,26 @@ This week, we will focus on refactoring techniques and how to identify code smel
 - Apply refactoring techniques to address code smells.
 - Discuss the benefits of addressing code smells in the context of continuous improvement and technical excellence.
 - Identify common smells (long method, duplicate code, shotgun surgery, etc.).
-- Apply targeted refactorings without changing behaviour.
+- Apply targeted refactorings without changing behavior.
 - Document before/after impact for peer review.
 
 ## 2. Reading & Resources (80 min)
 
 - **Clean Code Chapter 17: Smells and Heuristics**.
-- **[Refactoring Guru: Code Smells](https://refactoring.guru/refactoring/smells)** – Catalogue of common smells and refactors.
+- **[Refactoring Guru: Code Smells](https://refactoring.guru/refactoring/smells)** – Catalog of common smells and refactors.
 - **[Clean Code Smells And Heuristics](https://medium.com/@mut_e/clean-code-smells-and-heuristics-9080d9ab67c1)** – Quick reference checklist.
 - **[YouTube: Why Code with Code Smells is Harder to Understand](https://www.youtube.com/watch?v=gkjbWKp4VgM)**
 - **[YouTube: Code Refactoring: Learn Code Smells And Level Up Your Game!](https://www.youtube.com/watch?v=D4auWwMsEnY)**
 
-## 3. This Week’s Work
+## 3. This Week's Work
 
-**REVISED: Code Smell Scavenger Hunt**
+**Code Smell Scavenger Hunt**
 
 - **Step 0:** Read the Code Smells Catalog (Section 11 below) - 15 min
 - Find at least **five** distinct smells in `TaskFlowAPI` using the catalog as your guide.
-- **NEW:** At least 3 of your 5 smells must come from the catalog (marked with `// CODE SMELL:` comments).
+- At least 3 of your 5 smells must come from the catalog (marked with `// CODE SMELL:` comments).
 - Refactor each smell using appropriate technique (extract method/class, replace conditional, parameter object, etc.).
-- Document each change in PR description with “smell → refactor → result”.
+- Document each change in PR description with "smell → refactor → result".
 
 ## 4. Files to Modify
 
@@ -40,13 +40,13 @@ This week, we will focus on refactoring techniques and how to identify code smel
 ## 5. Step-by-Step Instructions
 
 1. Branch `week-18/<your-name>`.
-2. **NEW:** Read `docs/code-smells-catalog.md` to understand the intentional smells added to the codebase.
-3. **NEW:** Search for `// CODE SMELL:` comments in the codebase:
+2. Read `docs/code-smells-catalog.md` to understand the intentional smells added to the codebase.
+3. Search for `// CODE SMELL:` comments in the codebase:
    ```bash
    grep -r "CODE SMELL" TaskFlowAPI/
    ```
    Or use your IDE's Find in Files feature.
-4. **NEW:** Choose 5 smells to fix:
+4. Choose 5 smells to fix:
    - At least 3 must be from the catalog (marked with comments)
    - 2 can be smells you discover yourself
    - Mix of easy, medium, and hard difficulty
@@ -74,16 +74,17 @@ dotnet test TaskFlowAPI.sln
   - Refactoring technique applied
   - Before/after code snippet
   - Outcome (tests pass, code cleaner, etc.)
-- Behaviour unchanged (tests pass).
+- behavior unchanged (tests pass).
 - No new smells introduced (e.g., giant helpers).
 - All `// CODE SMELL:` comments removed from fixed code.
 
 ## 8. Submission Process
 
-- Commit `Week 18 – smell cleanup` (use multiple commits if helpful, e.g., one per smell).
-- PR summary includes table:
-  | Smell | Location | Refactoring | Outcome |
-- Weekly issue references same table + lessons learned.
+1.  Create a new branch for your weekly work (e.g., `git checkout -b week-18-submission`).
+2.  Commit your changes to this branch (e.g., `git commit -m "feat: Complete Week 18 work"`).
+3.  Push the branch to your forked repository on GitHub.
+4.  On GitHub, create a Pull Request from your new branch to your `main` branch.
+5.  Review, approve, and merge your own Pull Request.
 
 ## 9. Journal and Discussion Prep
 
@@ -91,11 +92,11 @@ dotnet test TaskFlowAPI.sln
 
 ### Journal:
 - *Smell Catalog:* Log the five smells you targeted and the refactor applied.
-- *Regression Safeguards:* Note which tests or checks gave you confidence behaviour stayed the same.
+- *Regression Safeguards:* Note which tests or checks gave you confidence behavior stayed the same.
 
 ### Discussion Prep:
 - *Which smell surprised you most?*
-- *How did you ensure behaviour stayed the same?*
+- *How did you ensure behavior stayed the same?*
 - *What tooling helped you locate smells?*
 - *Where do you still see opportunities for future refactors?*
 
@@ -105,10 +106,11 @@ dotnet test TaskFlowAPI.sln
 - 15 min – Read Code Smells Catalog (Section 11).
 - 15 min – Identify smells (search for `// CODE SMELL:` comments).
 - 75 min – Refactor (approx. 5x ~15 min each, mix of easy/medium).
-- 15 min – Tests + documentation.
+- 20 min - Journal + discussion prep.
+- 15 min – Test => PR => Review => Merge.
 **Total:** ~200 minutes (3.3 hours).
 
-## 11. Code Smell Scavenger Hunt (NEW)
+## 11. Code Smell Scavenger Hunt
 
 **Goal:** Find and fix intentional code smells added to the codebase
 

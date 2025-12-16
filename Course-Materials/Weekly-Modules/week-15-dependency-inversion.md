@@ -23,6 +23,10 @@ This week, we are focusing on the Dependency Inversion Principle (DIP) and how i
 - Audit constructors and replace any direct concrete dependencies with interfaces.
 - Update `Program.cs` DI registrations accordingly.
 
+Note (optional):
+
+- If you prefer all cross-cutting collaborators to be interface-backed, consider adding a small task to create `ITaskBusinessRules` (see Week 11). Creating `ITaskBusinessRules` lets business-rule logic be injected via an interface (like other infra abstractions) and simplifies mocking in tests. Files to modify would be `TaskFlowAPI/Services/Tasks/Rules/ITaskBusinessRules.cs` and making `TaskBusinessRules` implement it; update `Program.cs` to register the interface.
+
 ## 4. Files to Modify
 
 - New: `TaskFlowAPI/Infrastructure/Time/ISystemClock.cs`, `UtcSystemClock.cs`
@@ -40,7 +44,7 @@ This week, we are focusing on the Dependency Inversion Principle (DIP) and how i
 3. Implement `UtcSystemClock : ISystemClock` returning `DateTime.UtcNow`.
 4. Inject `ISystemClock` where `DateTime.UtcNow` is currently used (entity factory, business rules, service logging timestamps).
 5. Update DI: `builder.Services.AddSingleton<ISystemClock, UtcSystemClock>();`
-6. In tests, create fake clock for deterministic behaviour.
+6. In tests, create fake clock for deterministic behavior.
 7. Audit constructors for any other concrete types (e.g., `TaskRepository` uses `TaskFlowDbContext`—acceptable). Replace direct instantiations with DI where needed.
 8. Build/tests.
 
@@ -50,7 +54,7 @@ This week, we are focusing on the Dependency Inversion Principle (DIP) and how i
 dotnet build TaskFlowAPI.sln
 dotnet test TaskFlowAPI.sln
 ```
-- Ensure tests use fake clock to verify behaviours that depend on time.
+- Ensure tests use fake clock to verify behaviors that depend on time.
 
 ## 7. Success Criteria
 
@@ -61,9 +65,11 @@ dotnet test TaskFlowAPI.sln
 
 ## 8. Submission Process
 
-- Commit `Week 15 – dependency inversion`.
-- PR summary includes list of newly introduced abstractions.
-- Weekly issue documents how fake clock improved testability.
+1.  Create a new branch for your weekly work (e.g., `git checkout -b week-15-submission`).
+2.  Commit your changes to this branch (e.g., `git commit -m "feat: Complete Week 15 work"`).
+3.  Push the branch to your forked repository on GitHub.
+4.  On GitHub, create a Pull Request from your new branch to your `main` branch.
+5.  Review, approve, and merge your own Pull Request.
 
 ## 9. Journal and Discussion Prep
 
@@ -84,7 +90,8 @@ dotnet test TaskFlowAPI.sln
 - 60 min – Reading.
 - 10 min – Identify concrete dependencies.
 - 35 min – Implement clock abstraction + inject.
-- 15 min – Update tests + PR/issue.
+- 20 min - Journal + discussion prep.
+- 15 min – Test => PR => Review => Merge.
 **Total:** ~120 minutes.
 
 ## 11. Why Abstract System Time?

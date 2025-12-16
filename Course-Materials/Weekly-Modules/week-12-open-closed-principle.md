@@ -63,9 +63,11 @@ dotnet test TaskFlowAPI.sln
 
 ## 8. Submission Process
 
-- Commit `Week 12 – task filter strategies`.
-- PR summary includes list of supported query params and example outputs.
-- Weekly issue attaches screenshot or `curl` results showing filter working.
+1.  Create a new branch for your weekly work (e.g., `git checkout -b week-12-submission`).
+2.  Commit your changes to this branch (e.g., `git commit -m "feat: Complete Week 12 work"`).
+3.  Push the branch to your forked repository on GitHub.
+4.  On GitHub, create a Pull Request from your new branch to your `main` branch.
+5.  Review, approve, and merge your own Pull Request.
 
 ## 9. Journal and Discussion Prep
 
@@ -86,7 +88,8 @@ dotnet test TaskFlowAPI.sln
 - 45 min – Reading.
 - 10 min – Design filters.
 - 50 min – Implement filters, factory, controller updates.
-- 15 min – Manual verification + PR/issue.
+- 20 min - Journal + discussion prep.
+- 15 min – Test => PR => Review => Merge.
 **Total:** ~120 minutes.
 
 ## 11. "Before OCP" Anti-Pattern (NEW - Learn What NOT To Do)

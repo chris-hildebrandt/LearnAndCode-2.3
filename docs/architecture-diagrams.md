@@ -4,6 +4,147 @@ This document contains visual diagrams to help understand the TaskFlowAPI archit
 
 ---
 
+## 0. Week 1 Simplified Architecture (Essential View)
+
+**For junior developers in Week 1:** This simplified diagram shows only the core components you need to understand.
+
+```mermaid
+classDiagram
+    %% Presentation
+    class TasksController {
+        -ITaskService _taskService
+        +GetAllTasksAsync()
+        +GetTaskByIdAsync()
+        +CreateTaskAsync()
+    }
+    
+    %% Application Layer
+    class ITaskService {
+        <<interface>>
+        +GetAll()
+        +Get()
+        +Add()
+    }
+    
+    class TaskService {
+        -ITaskRepository _taskRepository
+        +GetAll()
+        +Get()
+        +Add()
+    }
+    
+    %% Data Access
+    class ITaskRepository {
+        <<interface>>
+        +GetAllAsync()
+        +GetByIdAsync()
+        +CreateAsync()
+    }
+    
+    class TaskRepository {
+        -TaskFlowDbContext _dbContext
+    }
+    
+    %% Database
+    class TaskFlowDbContext {
+        +DbSet~TaskEntity~ Tasks
+    }
+    
+    class TaskEntity {
+        +int Id
+        +string Title
+        +DateTime? DueDate
+        +bool IsCompleted
+    }
+    
+    %% Relationships
+    TasksController --> ITaskService : depends on
+    TaskService ..|> ITaskService : implements
+    TaskService --> ITaskRepository : depends on
+    TaskRepository ..|> ITaskRepository : implements
+    TaskRepository --> TaskFlowDbContext : uses
+    TaskFlowDbContext --> TaskEntity : contains
+```
+
+### Understanding This Diagram
+
+**Three Key Layers:**
+- **Controllers** (top) - Receives HTTP requests from clients
+- **Services** (middle) - Contains business logic  
+- **Repositories** (bottom) - Handles data access to the database
+
+**Why Dependencies Flow Downward:**
+- Controllers ask Services to do work
+- Services ask Repositories to fetch/store data
+- Controllers DON'T talk directly to Repositories (good design!)
+
+### Questions to Ponder
+
+As you explore the codebase, think about:
+1. Why does `TasksController` depend on `ITaskService` instead of `TaskService` directly?
+2. What is the purpose of the `ITaskRepository` interface?
+3. Why is there a `TaskFlowDbContext` separate from the `TaskRepository`?
+4. If you wanted to add a new method to get tasks by priority, which layer(s) would you modify?
+
+---
+
+## Diagram Legend & Annotations
+
+### Diagram Symbols
+
+| Symbol | Meaning | Example |
+|--------|---------|---------|
+| **-->** | "depends on" / "uses" | Controller → Service (controller uses service) |
+| **..\|\>** | "implements" | Service ..\|\> IService (service implements interface) |
+| **<<interface>>** | Interface type | ITaskService is a contract/interface |
+| **\-** (private field) | Hidden from external code | \-_taskService (only this class uses it) |
+| **\+** (public method) | Available to external code | \+GetAllAsync() (other code can call this) |
+
+### Layer Responsibilities
+
+**Controllers Layer** - HTTP Entry Points
+- Receives HTTP requests from clients
+- Validates request format
+- Calls services to do work
+- Returns HTTP responses (200 OK, 400 Bad Request, etc.)
+- **Code Smell Alert:** Controllers should be THIN (10-20 lines typically)
+
+**Services Layer** - Business Logic
+- Contains the actual business logic
+- Orchestrates repositories and other services
+- Performs calculations, filtering, validation
+- Maps between DTOs (what API returns) and Entities (what DB stores)
+- **Code Smell Alert:** If >200 lines, break into smaller services
+
+**Repository Layer** - Data Access Abstraction
+- Isolates database-specific code
+- Provides simple methods: GetAll(), GetById(), Create(), Update(), Delete()
+- Should NOT contain business logic (just data access)
+- Makes testing easier (can replace with fake repository)
+
+**Entity Layer** - Domain Models
+- Represents database tables
+- Contains properties that map to database columns
+- Will evolve over 23 weeks to have business logic (Week 7+)
+
+### SOLID Principles in This Architecture
+
+**Dependency Inversion (the most important one!):**
+- Controllers depend on `ITaskService` (interface), not `TaskService` (concrete class)
+- Services depend on `ITaskRepository` (interface), not `TaskRepository` (concrete class)
+- This allows you to swap implementations (great for testing!)
+
+**Single Responsibility:**
+- TasksController: Handles HTTP requests only
+- TaskService: Handles business logic only
+- TaskRepository: Handles database access only
+
+**Open/Closed:**
+- Adding a new feature? Create new methods, don't modify existing ones
+- Adding a filter? Create a new filter class, don't modify existing logic
+
+---
+
 ## 1. Current State Class Diagram
 
 This diagram shows the initial architecture of TaskFlowAPI (Weeks 1-8).
@@ -50,7 +191,7 @@ classDiagram
     %% Repositories Layer
     class ITaskRepository {
         <<interface>>
-        +GetAllAsync()
+**CQRS Pattern (Weeks 14 & 22):** Separate read (`ITaskReader`) and write (`ITaskWriter`) interfaces (Week 14: interface segregation and reader/writer split; Week 22: reinforce reader/writer usage during caching/performance work)
         +GetByIdAsync()
         +CreateAsync()
         +UpdateAsync()

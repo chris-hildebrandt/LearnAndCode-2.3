@@ -14,7 +14,7 @@ This week, we will explore various design patterns and their applications in sof
 
 ## 2. Reading & Resources (50 min)
 
-- **[Patterns.dev](https://www.patterns.dev/posts)** – Browse sections on creational and behavioural patterns.
+- **[Patterns.dev](https://www.patterns.dev/posts)** – Browse sections on creational and behavioral patterns.
 - **[Refactoring Guru: Design Patterns](https://refactoring.guru/design-patterns)** – Reference implementations and UML diagrams.
 - **[Sourcemaking: Design Patterns](https://sourcemaking.com/design_patterns)** – Additional explanations with variations.
 - **[Tutorialspoint Design Patterns Overview](https://www.tutorialspoint.com/design_pattern/design_pattern_overview.htm)** – Quick refresher on categories.
@@ -40,7 +40,7 @@ This week, we will explore various design patterns and their applications in sof
 ## 5. Step-by-Step Instructions
 
 1. Branch `week-19/<your-name>`.
-2. Design `TaskFactory` with methods like `CreateNewTask(CreateTaskRequest request, ISystemClock clock)` returning a fully initialised entity.
+2. Design `TaskFactory` with methods like `CreateNewTask(CreateTaskRequest request, ISystemClock clock)` returning a fully initialized entity.
 3. Move creation logic (default priority, `CreatedAt`) from mapper/business rules into factory.
 4. Update `TaskService` to call factory before saving; ensure tests updated to mock factory.
 5. Review filter strategy registration—ensure service receives filters via abstraction (no `new` in service). Refactor if needed.
@@ -64,9 +64,11 @@ dotnet test TaskFlowAPI.sln
 
 ## 8. Submission Process
 
-- Commit `Week 19 – design patterns`.
-- PR summary lists patterns implemented/refined and rationale.
-- Weekly issue includes short paragraph on when to use Factory vs. Strategy.
+1.  Create a new branch for your weekly work (e.g., `git checkout -b week-19-submission`).
+2.  Commit your changes to this branch (e.g., `git commit -m "feat: Complete Week 19 work"`).
+3.  Push the branch to your forked repository on GitHub.
+4.  On GitHub, create a Pull Request from your new branch to your `main` branch.
+5.  Review, approve, and merge your own Pull Request.
 
 ## 9. Journal and Discussion Prep
 
@@ -87,7 +89,8 @@ dotnet test TaskFlowAPI.sln
 - 55 min – Reading.
 - 10 min – Pattern review + design.
 - 40 min – Implement factory + service/test updates.
-- 15 min – Build/test + PR/issue.
+- 20 min - Journal + discussion prep.
+- 15 min – Test => PR => Review => Merge.
 **Total:** ~120 minutes.
 
 ## 11. Why Factory Pattern?

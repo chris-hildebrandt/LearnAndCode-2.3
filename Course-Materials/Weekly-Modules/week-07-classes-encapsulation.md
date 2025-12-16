@@ -180,9 +180,11 @@ dotnet test TaskFlowAPI.sln
 
 ## 8. Submission Process
 
-- Commit `Week 07 – task entity encapsulation`.
-- PR summary must describe each new domain method and rule enforced.
-- Weekly submission issue includes snippet of new `TaskEntity.Create` signature.
+1.  Create a new branch for your weekly work (e.g., `git checkout -b week-07-submission`).
+2.  Commit your changes to this branch (e.g., `git commit -m "feat: Complete Week 7 work"`).
+3.  Push the branch to your forked repository on GitHub.
+4.  On GitHub, create a Pull Request from your new branch to your `main` branch.
+5.  Review, approve, and merge your own Pull Request.
 
 ## 9. Journal and Discussion Prep
 
@@ -202,14 +204,15 @@ dotnet test TaskFlowAPI.sln
 ## 10. Time Estimate
 
 **Phase 1 (Core - REQUIRED):**
-- 40 min – Reading Clean Code chapter.
+- 40 min – Reading.
 - 10 min – Review Encapsulation Decision Framework (NEW)
 - 15 min – Choose and implement encapsulation approach (init vs private field)
 - 20 min – Add constructor, factory, Complete() method
 - 15 min – EF Core parameterless constructor + understanding why
 - 20 min – Update seed data and fix compilation errors
 - 10 min – Test and verify database updates
-- 15 min – Journal and discussion prep.
+- 20 min - Journal + discussion prep.
+- 15 min – Test => PR => Review => Merge.
 **Phase 1 Total:** ~2 hours 25 minutes (more realistic for juniors)
 
 **Phase 2 (Optional Extension):**

@@ -60,9 +60,12 @@ dotnet test TaskFlowAPI.sln
 - Logs contain warning/error messages for invalid requests.
 
 ## 8. Submission Process
-- Commit `Week 10 – validation and error handling`.
-- PR summary includes sample error response JSON.
-- Weekly issue attaches screenshot of Swagger error response.
+
+1.  Create a new branch for your weekly work (e.g., `git checkout -b week-10-submission`).
+2.  Commit your changes to this branch (e.g., `git commit -m "feat: Complete Week 10 work"`).
+3.  Push the branch to your forked repository on GitHub.
+4.  On GitHub, create a Pull Request from your new branch to your `main` branch.
+5.  Review, approve, and merge your own Pull Request.
 
 ## 9. Journal and Discussion Prep
 
@@ -82,7 +85,8 @@ Discussion Prep:
 ## 10. Time Estimate
 - 80 min – Reading + rule design.
 - 25 min – Implement validators, exceptions, middleware.
-- 15 min – Manual testing + PR/issue.
+- 20 min - Journal + discussion prep.
+- 15 min – Test => PR => Review => Merge.
 **Total:** ~120 minutes.
 
 ## 11. Additional Resources

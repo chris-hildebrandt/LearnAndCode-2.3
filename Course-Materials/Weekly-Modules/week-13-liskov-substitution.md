@@ -7,7 +7,7 @@ This week, we are focusing on the Liskov Substitution Principle (LSP) and how it
 - Understand the Liskov Substitution Principle and its importance in creating maintainable, extensible, and testable code.
 - Ensure repository/service interfaces can be substituted without breaking consumers.
 - Validate assumptions via contract-style unit tests using fakes.
-- Tighten exception behaviour so all implementations honour the same rules.
+- Tighten exception behavior so all implementations honor the same rules.
 
 ## 2. Reading & Resources (45 min)
 
@@ -20,8 +20,8 @@ This week, we are focusing on the Liskov Substitution Principle (LSP) and how it
 ## 3. This Week’s Work
 
 - Create in-memory `FakeTaskRepository` for tests to exercise `ITaskService` contract.
-- Adjust `TaskRepository` and `TaskService` to ensure behaviour matches fake (e.g., null vs. exception cases).
-- Add contract tests verifying both real and fake repositories honour expectations.
+- Adjust `TaskRepository` and `TaskService` to ensure behavior matches fake (e.g., null vs. exception cases).
+- Add contract tests verifying both real and fake repositories honor expectations.
 
 ## 4. Files to Modify
 
@@ -32,10 +32,10 @@ This week, we are focusing on the Liskov Substitution Principle (LSP) and how it
 
 **Stage 2 (TaskFlow Application):**
 - `TaskFlowAPI/Repositories/Interfaces/ITaskRepository.cs` (update XML summary clarifying contract)
-- `TaskFlowAPI/Repositories/TaskRepository.cs` (ensure behaviour matches contract)
+- `TaskFlowAPI/Repositories/TaskRepository.cs` (ensure behavior matches contract)
 - `TaskFlowAPI.Tests/Unit/FakeTaskRepository.cs` (NEW - in-memory fake)
 - `TaskFlowAPI.Tests/Unit/TaskRepositoryContractTests.cs` (NEW - verify both implementations)
-- Optional: `TaskFlowAPI/Services/Tasks/TaskService.cs` for behaviour tweaks
+- Optional: `TaskFlowAPI/Services/Tasks/TaskService.cs` for behavior tweaks
 
 **Stage 3 (Reflection):**
 - `docs/week-13-lsp-reflection.md` (NEW - connect both examples)
@@ -103,8 +103,8 @@ dotnet test TaskFlowAPI.sln --filter TaskRepositoryContractTests
 - ✅ `docs/week-13-lsp-lab.md` explains why it failed and your fix
 
 **Stage 2 (TaskFlow):**
-- ✅ Interface documentation clearly states behavioural contract
-- ✅ Fake repository mirrors real repository behaviour (no diverging edge cases)
+- ✅ Interface documentation clearly states behavioral contract
+- ✅ Fake repository mirrors real repository behavior (no diverging edge cases)
 - ✅ Contract tests pass for BOTH implementations
 - ✅ No conditional test logic (same assertions for both)
 
@@ -119,16 +119,18 @@ dotnet test TaskFlowAPI.sln --filter TaskRepositoryContractTests
 
 ## 8. Submission Process
 
-- Commit `Week 13 – LSP contract tests`.
-- PR summary includes snippet of contract test and link to passing run.
-- Weekly issue documents at least one behaviour clarified by the contract.
+1.  Create a new branch for your weekly work (e.g., `git checkout -b week-13-submission`).
+2.  Commit your changes to this branch (e.g., `git commit -m "feat: Complete Week 13 work"`).
+3.  Push the branch to your forked repository on GitHub.
+4.  On GitHub, create a Pull Request from your new branch to your `main` branch.
+5.  Review, approve, and merge your own Pull Request.
 
 ## 9. Journal and Discussion Prep
 
 (Use this section as a journal of your learning. Answer the questions below after completing the reading and assignment. ALSO record any questions or comments you would like to bring up during this week's discussion.)
 
 ### Journal:
-- *Contract Definition:* Capture one behavioural rule you wrote into interface docs.
+- *Contract Definition:* Capture one behavioral rule you wrote into interface docs.
 - *Test Coverage:* Note which contract test caught differences between fake and real implementations.
 
 ### Discussion Prep:
@@ -153,7 +155,8 @@ dotnet test TaskFlowAPI.sln --filter TaskRepositoryContractTests
 - **20 min – Stage 3: Reflection (NEW)**
   - 10 min: Red flags comparison
   - 10 min: Reflection questions
-- 10 min – Final PR/issue.
+- 20 min - Journal + discussion prep.
+- 15 min – Test => PR => Review => Merge.
 
 **Total:** ~2 hours 30 minutes (increased from 2h, but FAR better retention and understanding)
 

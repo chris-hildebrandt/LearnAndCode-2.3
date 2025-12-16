@@ -71,6 +71,23 @@ public class TaskService : ITaskService
         throw new NotImplementedException("Week 9: Implement Add to create a new task.");
     }
 
+    // WEEK 4 TODO: Implement UpdateTaskAsync and DeleteTaskAsync
+    //
+    // Both methods should:
+    //   1. Match the signatures you defined in ITaskService exactly
+    //   2. Throw NotImplementedException with message: "Week 9: Implement [operation] logic"
+    //   3. Have the async keyword in the method signature
+    //
+    // Example structure:
+    //   public async Task<ReturnType> MethodName(parameters)
+    //   {
+    //       throw new NotImplementedException("Week 9: Implement update logic");
+    //   }
+    //
+    // After adding, run 'dotnet build' - you should see warnings about NotImplementedException (expected!).
+    // If you see errors about "does not implement interface member", your signatures don't match the interface.
+    
+
     // Helper methods are used to encapsulate logic that is repeated within a class.
     // These two methods handle the conversion between database "Entity" objects and "DTO" (Data Transfer Objects).
     // This is an important separation: Entities map to the database, while DTOs map to what the outside world (the client) sees.

@@ -57,7 +57,11 @@ No testing this week.
 
 ## 8. Submission Process
 
-- Link the open PR (even if not merged) in your weekly issue.
+1.  Create a new branch for your weekly work (e.g., `git checkout -b week-06-submission`).
+2.  Commit your changes to this branch (e.g., `git commit -m "feat: Complete Week 6 work"`).
+3.  Push the branch to your forked repository on GitHub.
+4.  On GitHub, create a Pull Request from your new branch to your `main` branch.
+5.  Review, approve, and merge your own Pull Request.
 
 ## 9. Journal and Discussion Prep
 
@@ -75,11 +79,12 @@ No testing this week.
 
 ## 10. Time Estimate
 
-- 10 min – Complete Git tutorial (if not already done).
+- 60 min – Complete Git tutorial (if not already done).
 - **20 min – Part A: Meaningful code change (validation extraction) - NEW**
 - **15 min – Part B: Git recovery scenarios (amend, cherry-pick) - NEW**
 - **15 min – Part C: Conflict resolution practice - NEW**
-- 10 min – Part D: PR + review response.
+- 20 min - Journal + discussion prep.
+- 15 min – Test => PR => Review => Merge.
 **Total:** ~70 minutes (increased, but teaches real git skills).
 
 ## 11. Git Recovery Commands Reference (NEW)

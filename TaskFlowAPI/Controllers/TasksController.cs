@@ -16,21 +16,30 @@ namespace TaskFlowAPI.Controllers;
 
 // WEEK 2 ASSIGNMENT: Meaningful Names
 //
-// This controller WORKS but has TERRIBLE names.
-// Your job (Week 2): Refactor EVERY name following Clean Code Chapter 2 principles.
+// CODE SMELL: Abbreviations & Unclear Names (Clean Code Ch 2, pp. 17-48)
+// This controller WORKS but has TERRIBLE names that violate every principle of meaningful naming.
+// Problems to identify and fix:
+// 1. Abbreviations that obscure intent: svc (service), s (service?), t (task), dt (data/datetime?), req (request, but confusing)
+// 2. Single-letter variables: 't' (ambiguous), 's' (ambiguous), 'dt' (is this DateTime or DataTable?  Confusing!)
+// 3. Method names that don't reveal intention: Get() (get what?), GetOne() (one what?), Add() (add what?)
+// 4. Inconsistent naming style: some use abbreviations, some don't
+// 5. Disinformation: abbreviations can mean multiple things (dt = DateTime OR DataTransfer?)
 //
-// Problems to fix (there are many!):
-// 1. Abbreviations: svc, s, t, dt, req
-// 2. Unclear method names: Get(), GetOne(), Add()
-// 3. Single-letter variables: t, s, dt
-// 4. Inconsistent naming style
-// 5. Non-descriptive parameter names
+// Refactor by: Apply Clean Code Chapter 2 principles:
+// - Replace abbreviations with full names (svc → taskService, t → taskDto, dt → ???)
+// - Use searchable names (can find 'svc' everywhere, which is noise)
+// - Make distinctions meaningful (what's the difference between 't' and 'taskDto'?)
+// - Use pronounceable names (spell out 'taskRepository' so people can discuss it)
+// - Method names should be verb phrases (GetAllTasks, not Get; CreateTask, not Add)
+// - Parameter names should clarify intent (taskId instead of id, createRequest instead of req)
 //
 // Success criteria:
-// - Every name reveals intention without comments
-// - No abbreviations (except standard: HTTP, API, ID, DTO)
-// - Method names are verb phrases (GetAllTasks, not Get)
-// - Parameter names explain what they hold (taskId, request)
+// - Every name reveals intention without needing a comment
+// - No abbreviations except standard conventions (HTTP, API, ID, DTO)
+// - Method names are action verbs + object (Get → GetAllTasks, GetOne → GetTaskById)
+// - All variable/parameter names are searchable and pronounceable
+// - No single-letter variables (except loop iterators like 'i')
+// - Code should be readable aloud to another developer
 //
 // Time estimate: 50 minutes
 // - Identify all bad names: 10 min
@@ -125,6 +134,22 @@ public class TasksController : ControllerBase // Our class 'TasksController' inh
         return CreatedAtAction(nameof(GetOne), new { id = dt.Id }, dt);
     }
 
-    // TODO Week 4 Assignment - Add UPDATE and DELETE methods with GOOD names from the start. Follow the GET and ADD methods above for reference.
-    // don't forget to update the ITaskService interface!
+    // WEEK 4 TODO: Add UpdateTask and DeleteTask action methods
+    //
+    // UpdateTask:
+    //   - Attribute: [HttpPut("{id}")]
+    //   - Method name: UpdateTask
+    //   - Parameters: int id, [FromBody] UpdateTaskRequest request, CancellationToken cancellationToken
+    //   - Call: await _taskService.UpdateTaskAsync(id, request, cancellationToken)
+    //   - Return: NoContent() for HTTP 204 status
+    //
+    // DeleteTask:
+    //   - Attribute: [HttpDelete("{id}")]
+    //   - Method name: DeleteTask
+    //   - Parameters: int id, CancellationToken cancellationToken
+    //   - Call: await _taskService.DeleteTaskAsync(id, cancellationToken)
+    //   - Return: NoContent() for HTTP 204 status (idempotent operation)
+    //
+    // Both methods should follow the same async/await pattern as the Create method above.
+    // After adding, check Swagger UI - you should see PUT /api/tasks/{id} and DELETE /api/tasks/{id} endpoints.
 }

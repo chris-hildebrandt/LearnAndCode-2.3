@@ -18,6 +18,11 @@ namespace TaskFlowAPI.Validators;
 /// It allows for different logic than the `CreateTaskValidator`, which is often necessary for update operations.
 /// Week 10 scaffolding: Students implement update-specific validation rules here.
 /// </summary>
+// CODE SMELL: Duplicate Code (Clean Code Ch 17, p. 289)
+// This validator will likely have similar rule definitions (property validation chains) as CreateTaskValidator.
+// For example, both validate Title length, Priority range, and DueDate validity.
+// Only the conditions (required vs. optional) differ between create and update.
+// Refactor by: Extract common validation rules into a shared base validator or static validation methods.
 public class UpdateTaskValidator : AbstractValidator<UpdateTaskRequest>
 {
     /// <summary>

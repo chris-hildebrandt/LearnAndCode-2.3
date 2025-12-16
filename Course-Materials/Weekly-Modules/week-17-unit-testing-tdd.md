@@ -46,7 +46,7 @@ This week, we will explore the importance of unit testing and test-driven develo
 ## 5. Step-by-Step Instructions
 
 1. Branch `week-17/<your-name>`.
-2. Start with a failing test for `CompleteTaskAsync` (TDD). Define behaviour: mark complete, set timestamp, return DTO.
+2. Start with a failing test for `CompleteTaskAsync` (TDD). Define behavior: mark complete, set timestamp, return DTO.
 3. Implement minimal production code to pass the test using injected `ISystemClock`.
 4. Add tests for existing methods, mocking repository interactions and validators.
 5. Use `FluentAssertions` for assertions and `Moq` for verifying repository/validator calls.
@@ -70,9 +70,11 @@ dotnet test TaskFlowAPI.sln /p:CollectCoverage=true /p:CoverletOutputFormat=lcov
 
 ## 8. Submission Process
 
-- Commit `Week 17 – task service tests`.
-- PR summary includes coverage percentage and new tests list.
-- Weekly issue attaches coverage screenshot or `lcov` snippet.
+1.  Create a new branch for your weekly work (e.g., `git checkout -b week-17-submission`).
+2.  Commit your changes to this branch (e.g., `git commit -m "feat: Complete Week 17 work"`).
+3.  Push the branch to your forked repository on GitHub.
+4.  On GitHub, create a Pull Request from your new branch to your `main` branch.
+5.  Review, approve, and merge your own Pull Request.
 
 ## 9. Journal and Discussion Prep
 
@@ -92,7 +94,9 @@ dotnet test TaskFlowAPI.sln /p:CollectCoverage=true /p:CoverletOutputFormat=lcov
 
 - 60 min – Reading.
 - 45 min – Tests + implementation.
-- 15 min – Coverage run + PR/issue.
+- 15 min – Coverage run.
+- 20 min - Journal + discussion prep.
+- 15 min – Test => PR => Review => Merge.
 **Total:** ~120 minutes.
 
 ## 11. Fix Broken Tests First Exercise (NEW - Start Here)
@@ -432,7 +436,7 @@ public async Task CompleteTask_WhenNotCompleted_Succeeds()
 1. **What did you NOT test and why?**
    - Example: "Skipped TaskDto properties (no logic)"
 
-2. **What edge case surprised you?**
+2. **What edge case surprized you?**
    - Example: "CompleteAsync with null task threw NullReferenceException (fixed)"
 
 3. **Which test found a real bug?**

@@ -11,10 +11,20 @@
 
 ## 3. This Week’s Work
 - Polish codebase: remove unused TODOs, ensure comments explain “why,” not “what.”
-- Finalise documentation: update README quick start, architecture overview, diagrams if needed.
+- Finalize documentation: update README quick start, architecture overview, diagrams if needed.
 - Ensure tests cover final features and run green.
 - Record 5-minute demo video: overview, key features, design decisions, next steps.
 - Prepare final retro notes.
+
+Optional integration-test mini-lab (add to final polish):
+
+- Goal: add one integration test that exercises controller → service → repository using an in-memory provider so students can demonstrate end-to-end behavior. Use `WebApplicationFactory<TEntryPoint>` or `Microsoft.AspNetCore.Mvc.Testing` with an in-memory SQLite/EF Core provider.
+- Step-by-step (suggested):
+   1. Add a test project reference to `Microsoft.AspNetCore.Mvc.Testing` and configure a `WebApplicationFactory<Program>` subclass for the API.
+   2. In the factory override `ConfigureWebHost` to replace real DB with `UseSqlite("DataSource=:memory:")` and ensure the in-memory DB is opened and migrations applied in test setup.
+   3. Write an integration test that posts `CreateTaskRequest` to `POST /api/tasks`, then GETs `/api/tasks/{id}` and asserts the returned DTO matches the created task.
+   4. Run `dotnet test` to verify the integration test passes alongside unit tests.
+   - Files to Modify (optional): add `TaskFlowAPI.Tests/Integration/TaskApiIntegrationTests.cs` and a `TestWebApplicationFactory.cs` helper.
 
 ## 4. Files to Modify
 
@@ -53,10 +63,12 @@ dotnet test TaskFlowAPI.sln
 - Final retro completed.
 
 ## 8. Submission Process
-- Commit `Week 23 – final polish`.
-- PR summary includes demo video link and highlights final changes.
-- Weekly issue attaches final retro and test/build output.
-- Notify mentor in chat that final PR is ready for graduation review.
+
+1.  Create a new branch for your weekly work (e.g., `git checkout -b week-23-submission`).
+2.  Commit your changes to this branch (e.g., `git commit -m "feat: Complete Week 23 work"`).
+3.  Push the branch to your forked repository on GitHub.
+4.  On GitHub, create a Pull Request from your new branch to your `main` branch.
+5.  Review, approve, and merge your own Pull Request.
 
 ## 9. Journal and Discussion Prep
 
@@ -78,6 +90,8 @@ Discussion Prep:
 - 20 min – Build/test cleanup.
 - 30 min – Documentation + retro.
 - 30 min – Record/demo + upload.
+- 20 min - Journal + discussion prep.
+- 15 min – Test => PR => Review => Merge.
 **Total:** ~95 minutes.
 
 ## 11. Demo Script Template (NEW)

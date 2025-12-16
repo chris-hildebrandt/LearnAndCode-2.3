@@ -6,7 +6,7 @@
 - Handle not-found and validation errors consistently (pre-FluentValidation).
 
 ## 2. Reading & Resources (60 min)
-- **Clean Code Chapter 6: Objects and Data Structures (pp. 89-110)** – Balance data exposure with behaviour.
+- **Clean Code Chapter 6: Objects and Data Structures (pp. 89-110)** – Balance data exposure with behavior.
 - **Clean Code Chapter 11 (selected sections)** – Separate policy from implementation.
 - **[Data Structures: A Practical Guide](https://www.freecodecamp.org/news/the-top-data-structures-you-should-know-for-your-next-coding-interview-36af0831f5e3/)** – Conceptual grounding.
 - Optional: **Microsoft Docs: DTO pattern** – When and how to use DTOs in ASP.NET Core.
@@ -173,9 +173,12 @@ dotnet test TaskFlowAPI.sln
 - Build/tests succeed; manual GET returns seeded tasks.
 
 ## 8. Submission Process
-- Commit `Week 09 – task service implementation`.
-- PR summary must include sample JSON payload used for manual testing.
-- Weekly issue attaches Swagger screenshot showing GET response.
+
+1.  Create a new branch for your weekly work (e.g., `git checkout -b week-09-submission`).
+2.  Commit your changes to this branch (e.g., `git commit -m "feat: Complete Week 9 work"`).
+3.  Push the branch to your forked repository on GitHub.
+4.  On GitHub, create a Pull Request from your new branch to your `main` branch.
+5.  Review, approve, and merge your own Pull Request.
 
 ## 9. Journal and Discussion Prep
 
@@ -201,8 +204,8 @@ Discussion Prep:
 - 20 min – Step 2: Implement Get with checkpoint
 - 25 min – Step 3: Implement Add with checkpoint
 - 10 min – Step 4: Update mapping helpers
-- 10 min – Build/test + manual verification
-- 20 min – Journal + discussion.
+- 20 min - Journal + discussion prep.
+- 15 min – Test => PR => Review => Merge.
 **Total:** ~3 hours (more realistic for juniors, includes reflection time).
 
 ---

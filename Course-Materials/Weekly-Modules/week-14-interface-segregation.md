@@ -6,7 +6,7 @@ This week, we are focusing on the Interface Segregation Principle (ISP) and how 
 
 - Split “fat” interfaces into focused contracts.
 - Update implementations and consumers to depend only on what they use.
-- Ensure DI configuration honours the new abstractions.
+- Ensure DI configuration honors the new abstractions.
 
 ## 2. Reading & Resources (60 min)
 
@@ -59,9 +59,11 @@ dotnet test TaskFlowAPI.sln
 
 ## 8. Submission Process
 
-- Commit `Week 14 – interface segregation`.
-- PR summary explains who consumes reader vs. writer.
-- Weekly issue includes diagram or table of dependencies after refactor.
+1.  Create a new branch for your weekly work (e.g., `git checkout -b week-14-submission`).
+2.  Commit your changes to this branch (e.g., `git commit -m "feat: Complete Week 14 work"`).
+3.  Push the branch to your forked repository on GitHub.
+4.  On GitHub, create a Pull Request from your new branch to your `main` branch.
+5.  Review, approve, and merge your own Pull Request.
 
 ## 9. Journal and Discussion Prep
 
@@ -75,14 +77,15 @@ dotnet test TaskFlowAPI.sln
 - *What benefits did you notice after splitting interfaces?*
 - *Could any service depend on only `ITaskReader` now?*
 - *Where else could ISP apply in this codebase?*
-- *What migration steps would be required if you introduced additional specialised writers/readers later?*
+- *What migration steps would be required if you introduced additional specialized writers/readers later?*
 
 ## 10. Time Estimate
 
 - 60 min – Reading.
 - 10 min – Plan new interfaces.
 - 35 min – Implement + update consumers.
-- 15 min – Test + PR/issue.
+- 20 min - Journal + discussion prep.
+- 15 min – Test => PR => Review => Merge.
 **Total:** ~120 minutes.
 
 ## 11. Scaffolding & Templates

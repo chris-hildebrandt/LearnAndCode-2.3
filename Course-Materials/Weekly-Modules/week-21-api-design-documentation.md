@@ -71,9 +71,11 @@ dotnet test TaskFlowAPI.sln
 
 ## 8. Submission Process
 
-- Commit `Week 21 – API design polish`.
-- PR summary includes screenshot of updated Swagger UI.
-- Weekly issue documents pagination decisions (default size, max size).
+1.  Create a new branch for your weekly work (e.g., `git checkout -b week-21-submission`).
+2.  Commit your changes to this branch (e.g., `git commit -m "feat: Complete Week 21 work"`).
+3.  Push the branch to your forked repository on GitHub.
+4.  On GitHub, create a Pull Request from your new branch to your `main` branch.
+5.  Review, approve, and merge your own Pull Request.
 
 ## 9. Journal and Discussion Prep
 
@@ -94,7 +96,8 @@ dotnet test TaskFlowAPI.sln
 - 45 min – Reading.
 - 15 min – Planning.
 - 45 min – Pagination + versioning + docs updates.
-- 15 min – Swagger verification + PR/issue.
+- 20 min - Journal + discussion prep.
+- 15 min – Test => PR => Review => Merge.
 **Total:** ~120 minutes.
 
 ## 11. Configuration Examples
