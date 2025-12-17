@@ -1,106 +1,129 @@
-# Learn and Code: Course & Repository Reference
+# Learn and Code: Course & Repository Master Reference
 
 ## 1. Executive Summary
 
-**Course Name:** Learn and Code  
+**Course Name:** Learn and Code (In Time Tec)  
 **Based On:** "Clean Code" (Bob Martin), SOLID Principles, In Time Tec Quality Manifesto  
 **Target Audience:** New developers (apprentices), mid-level devs upskilling in .NET/Clean Code.  
 **Repository Purpose:** A hands-on learning environment consisting of a theoretical curriculum and a practical application (`TaskFlowAPI`) that evolves from a "messy" state to a robust, clean architecture over 23 weeks.
 
-This document serves as a master reference for AI agents and instructors to understand the structure, goals, and technical details of the course.
+This document is the **single master reference** for AI agents and humans to understand the curriculum structure, the training application, and the non-negotiable course constraints.
 
 ---
 
-## 2. Repository Structure
+## 2. Quickstart & Commands
 
-The repository is divided into two primary sections:
+**Build & Test:**
+```bash
+dotnet build TaskFlowAPI.sln
+dotnet test TaskFlowAPI.sln
+```
 
-### A. Curriculum (`/Course-Materials`)
-Contains the educational content and assignments.
--   **`Weekly-Modules/`**: The core progression. Files like `week-01-introduction.md`, `week-08-repository-pattern.md`. Each file contains:
-    -   Learning Objectives.
-    -   Readings ("Clean Code" chapters, "Quality Manifesto").
-    -   **"This Week's Work"**: Specific coding assignments in `TaskFlowAPI`.
-    -   Reflective Journal/Discussion prompts.
--   **`Readings/`**: PDF copies of core texts.
--   **`Examples/`**: Standalone code examples illustrating concepts (e.g., `MeaningfulNames.md`, `DependencyInversion.ts`).
--   **`About TaskFlowAPI/`**: High-level context about the project's evolution.
+**Run API:**
+```bash
+dotnet run --project TaskFlowAPI
+# Swagger UI available at: /swagger
+```
 
-### B. Project (`/TaskFlowAPI` & `/TaskFlowAPI.Tests`)
-The hands-on learning tool.
--   **Type:** ASP.NET Core Web API (.NET 8).
--   **Database:** SQLite (Entity Framework Core).
--   **Testing:** xUnit, Moq, FluentAssertions.
--   **State:** The project contains **intentional code smells** and **incomplete implementations** that students must fix/finish as part of their assignments.
+**Database Setup (SQLite):**
+```bash
+dotnet tool install --global dotnet-ef
+cd TaskFlowAPI
+dotnet ef database update
+```
 
 ---
 
-## 3. Curriculum Progression
+## 3. Course Constraints & Evaluation Rubric
 
-The course follows a linear progression from basic coding hygiene to advanced architectural patterns.
+**Crucial:** This is a *learning* repo. Changes must optimize for student understanding, not just code perfection.
 
-| Phase | Weeks | Focus | Key Assignments |
+### Non-Negotiable Constraints
+1.  **Tightly Coupled to Learning:** Changes must directly exercise the week's specific principle (e.g., Week 2 is *only* about Naming, don't fix Architecture yet).
+2.  **Accessible but Non-Trivial:** Scaffolding should guide the student (compiler errors, broken tests) but **never** provide copy-paste solutions.
+3.  **Matters to TaskFlowAPI:** Assignments must result in visible changes (Swagger behavior, passing tests, error messages). No busywork.
+
+### Agent Behavioral Guidelines
+-   **DO NOT** automatically fix "code smells" (like bad variable names `svc`, `dt`) unless the user is specifically working on that Week's assignment.
+-   **DO NOT** fill in `NotImplementedException` or `TODO` blocks proactively. These are student homework.
+-   **DO** point out these issues if asked to "review" or "audit," framing them as learning opportunities.
+-   **DO** check the "Target Week" before suggesting advanced patterns (e.g., don't suggest MediatR in Week 2).
+
+---
+
+## 4. Repository Structure & Hotspots
+
+### Curriculum ("Source of Truth")
+-   `Course-Materials/Weekly-Modules/`: The core progression (`week-01` to `week-23`).
+-   `Course-Materials/SETUP.md`: Environment setup.
+-   `docs/code-smells-catalog.md`: **Intentional** code smells placed for Week 18.
+
+### TaskFlowAPI (The "Lab")
+A .NET 8 Web API designed to teach boundaries.
+-   **Controllers** (`TaskFlowAPI/Controllers/`): HTTP concerns only.
+    -   *Note:* `ReportsController.cs` intentionally contains long methods and async anti-patterns (fixed in Week 4 & 22).
+-   **Services** (`TaskFlowAPI/Services/`): Business logic.
+    -   *Note:* `TaskService.cs` is the main orchestration point.
+-   **Repositories** (`TaskFlowAPI/Repositories/`): EF Core data access.
+    -   *Note:* `TaskRepository.cs` contains `NotImplementedException` stubs for Week 8.
+-   **Entities** (`TaskFlowAPI/Entities/`): Domain models.
+
+---
+
+## 5. Curriculum Map & File Targets
+
+This index maps learning objectives to the specific files students must modify.
+
+### Phase 1: Foundations (Weeks 1-5)
+| Week | Focus | Primary Files to Touch | Outcome |
 | :--- | :--- | :--- | :--- |
-| **Foundations** | 1-4 | Clean Code Basics | Setup, Naming (`TasksController` refactor), Comments, Functions. |
-| **Core Implementation** | 5-9 | Layered Architecture | Repository Pattern (`TaskRepository`), Service Layer, DTOs. |
-| **SOLID Principles** | 10-15 | OOD Principles | SRP (Validation), OCP (Filters), LSP, ISP, DIP. |
-| **Advanced Topics** | 16-23 | Process & Polish | File Org, TDD (`CompleteTaskAsync`), Refactoring, Design Patterns, Perf. |
+| **01** | Intro & Quality | `SETUP.md`, `docs/architecture-diagrams.md` | Dev env running, Swagger accessible. |
+| **02** | Meaningful Names | `TasksController.cs`, `ITaskService.cs`, `TaskService.cs` | No `svc`, `dt`, `s` variables. Clear intent. |
+| **03** | Comments | Same as Week 2 | Delete "what" comments, keep "why" docs. |
+| **04** | Functions | `ReportsController.cs` | Extract methods from `GenerateProjectSummaryReport`. |
+| **05** | AI Tools | `Examples/Week-05-AI-Assignment.md` | Compare AI refactor vs Human refactor. |
+
+### Phase 2: Architecture (Weeks 6-10)
+| Week | Focus | Primary Files to Touch | Outcome |
+| :--- | :--- | :--- | :--- |
+| **06** | Git Workflow | N/A | Branching/PR practice. |
+| **07** | Encapsulation | `TaskEntity.cs` | Protect invariants (no empty titles, valid priority). |
+| **08** | Repository Pattern | `TaskRepository.cs`, `TaskFlowDbContext.cs` | Implement EF Core methods (`AsNoTracking`, `Include`). |
+| **09** | Services & DTOs | `TaskService.cs`, `DTOs/*` | Service returns DTOs, not Entities. |
+| **10** | Error/Validation | `Validators/*`, `ExceptionMiddleware` | 400 Bad Request on invalid input, not 500. |
+
+### Phase 3: SOLID (Weeks 11-15)
+| Week | Focus | Primary Files to Touch | Outcome |
+| :--- | :--- | :--- | :--- |
+| **11** | SRP | `TaskService.cs`, new `TaskMapper`, `TaskBusinessRules` | Extract logic out of giant Service class. |
+| **12** | OCP (Strategy) | `Services/Tasks/Filters/*`, `TasksController` | Add filters without modifying existing logic. |
+| **13** | LSP | `FakeTaskRepository`, Tests | Contract tests ensure Fake acts like Real repo. |
+| **14** | ISP | `ITaskRepository` | Split into `ITaskReader` / `ITaskWriter`. |
+| **15** | DIP | `TaskService`, `ISystemClock` | Inject time dependencies for testability. |
+
+### Phase 4: Quality & Advanced (Weeks 16-23)
+| Week | Focus | Primary Files to Touch | Outcome |
+| :--- | :--- | :--- | :--- |
+| **16** | File Org | Namespace restructuring | Better folder structure. |
+| **17** | TDD | `TaskFlowAPI.Tests/`, `TaskService` | TDD `CompleteTaskAsync`. Replace skipped tests. |
+| **18** | Refactoring | `TaskHelper.cs`, `ReportsController` | Fix smells from `code-smells-catalog.md`. |
+| **19** | Design Patterns | Factory Pattern | Context-aware object creation. |
+| **21** | API Design | `TasksController` | Pagination, Versioning. |
+| **22** | Async Best Practices | `ReportsController.cs` | Remove `.Result`, `Task.Run`, fire-and-forget. |
 
 ---
 
-## 4. TaskFlowAPI Technical Reference
+## 6. Known State Quirks (Do Not Fix Prematurely)
 
-### Architecture
-The app follows a standard layered architecture:
-1.  **Presentation:** `Controllers/` (e.g., `TasksController.cs`). Handles HTTP, input parsing.
-2.  **Application/Service:** `Services/` (e.g., `TaskService.cs`). Business logic, validation, DTO mapping.
-3.  **Data Access:** `Repositories/` (e.g., `TaskRepository.cs`). DB interactions via EF Core.
-4.  **Domain/Data:** `Entities/` (e.g., `TaskEntity.cs`) and `Data/` (`TaskFlowDbContext`).
-
-### Key Patterns Used
--   **Dependency Injection:** Heavily used in `Program.cs` and constructors.
--   **Repository Pattern:** Abstracting data access (Week 8).
--   **Strategy Pattern:** Used for Task Filters (Week 12).
--   **Factory Pattern:** Planned for Week 19.
-
-### Testing Strategy
--   **Unit Tests:** Focus on Service layer logic.
--   **Fakes vs. Mocks:** Strong preference for **Fakes** (e.g., `FakeTaskRepository`) for state-based testing, reserving **Mocks** (Moq) for interaction verification.
--   **TDD:** Explicitly taught in Week 17; students must implement `CompleteTaskAsync` using TDD.
+1.  **Broken Tests:** The `TaskFlowAPI.Tests` project contains skipped tests. This is intentional until Week 17.
+2.  **NotImplementedExceptions:** `TaskRepository` and `TaskService` have these to block functionality until the student implements them.
+3.  **ReportsController:** Intentionally messy and contains async anti-patterns for Week 4 and Week 22 assignments.
+4.  **TaskHelper.cs:** A "Code Smell Playground" containing bad static methods.
 
 ---
 
-## 5. Pedagogical Strategy & Agent Guidelines
-
-**Crucial for AI Agents:** This is a *learning* repo, not just a codebase to be "fixed".
-
-1.  **Intentional Imperfections:**
-    -   **DO NOT** automatically fix "code smells" (like bad variable names `svc`, `dt` or magic strings) unless the user specifically asks or is working on the relevant week (e.g., Week 2).
-    -   **DO NOT** fill in `NotImplementedException` or `TODO` blocks proactively. These are student homework.
-    -   **DO** point out these issues if asked to "review" or "audit" the code, framing them as learning opportunities.
-
-2.  **Scaffolding vs. Solutions:**
-    -   When assisting, provide **guidance and patterns** rather than full copy-paste solutions.
-    -   Example: If a student asks how to implement `GetAllAsync`, show the generic pattern (DbSet -> AsNoTracking -> ToList), not the exact code for `TaskEntity`.
-
-3.  **Context Awareness:**
-    -   Always check which **Week** the user is currently on.
-    -   *Example:* If a user is on Week 2, do not suggest advanced patterns like MediatR or CQRS. Stick to "Meaningful Names".
-    -   *Example:* If a user is on Week 8, focus strictly on EF Core and Repository pattern syntax.
-
-4.  **Alignment with Values:**
-    -   **Customer Centricity:** Link coding decisions to customer impact (e.g., "Bad naming slows down future features, costing the customer money").
-    -   **Quality Manifesto:** Reference the manifesto values (e.g., "Right First Time", "Total Quality Management") in explanations.
-
-### Common Student Pitfalls to Watch For
--   **Week 2:** Missed renames in `Program.cs` or comments.
--   **Week 8:** Forgetting `AsNoTracking()` for read-only queries.
--   **Week 9:** Leaking Entities into the Controller (bypassing DTOs).
--   **Week 17:** Mocking *everything* instead of using Fakes for logic and Mocks for side-effects.
-
----
-
-## 6. Maintenance & Contributor Notes
-
--   **Updating Curriculum:** If modifying weekly markdowns, ensure the corresponding code in `TaskFlowAPI` reflects the *start state* expected for that week.
--   **Snapshotting:** The repo design relies on the code evolving. Future improvements might involve using Git tags/branches to define the "Start State" for each week more rigorously.
+## 7. How to Verify Changes
+All changes should be verified by:
+1.  **Build:** `dotnet build` (Must pass).
+2.  **Test:** `dotnet test` (Should pass for implemented weeks, ignore explicit skips).
+3.  **Observation:** Use Swagger (`/swagger`) to verify the endpoint behaves as expected (returns 200/400/404).
