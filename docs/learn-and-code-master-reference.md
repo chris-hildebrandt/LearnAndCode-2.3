@@ -40,6 +40,14 @@ Any assignment, refactor, or feature change should satisfy all three:
 
 ---
 
+## Audience + operating model (important context for agents)
+
+- **Primary learners**: new developers (often without formal CS background) and mid-level devs upskilling in C#/.NET and clean design.
+- **Operating model**: each student **forks** the repo; weekly work happens on their fork/branches; this repo is curriculum + training app.
+- **Key implication**: TaskFlowAPI intentionally contains **incomplete code** and **intentional smells** so students can practice improving it.
+
+---
+
 ## Repository map (what’s where)
 
 ### Curriculum “source of truth”
@@ -333,6 +341,24 @@ Use this when editing weekly modules or adding new tasks.
 
 ---
 
+## AI agent guardrails (critical: this is a learning repo)
+
+This repository is not meant to be “fixed” all at once. Many “problems” are **deliberate homework**.
+
+### Do NOT do these unless explicitly requested (or the current week calls for it)
+
+- **Do not proactively remove code smells** (bad names, magic strings, long methods) unless the week is about that refactor (e.g., Week 2 naming, Week 18 smells).
+- **Do not implement `NotImplementedException` / `TODO Week X` blocks** early “to help.” Those are student assignments.
+- **Do not introduce advanced frameworks** (CQRS libs, MediatR, AutoMapper, etc.) unless a module explicitly teaches/justifies it.
+
+### Do these by default
+
+- **Ask/assume the week context** before proposing changes. If week is unknown, default to the *earliest safe* approach (keep changes small and aligned to Weeks 1–4 patterns).
+- **Provide guidance over solutions**: explain approach, provide scaffolding, and require verification steps instead of dumping paste-ready full implementations.
+- **Tie decisions to customer impact and ITT values**: explain how a change affects onboarding speed, defect rate, and partner ROI.
+
+---
+
 ## Agent usage guidance (recommended prompt skeleton)
 
 When spinning up an AI agent to modify this repo, include:
@@ -351,6 +377,42 @@ Suggested prompt skeleton:
   - Don’t introduce new deps unless the module explicitly teaches them.
   - Provide a short rationale mapping changes to learning objectives.
   - Ensure changes have a visible effect in the API (Swagger, error responses, tests, etc.).”
+
+---
+
+## Common student pitfalls (high-signal watchlist)
+
+These are recurring “gotchas” that increase frustration for beginners and are good targets for extra scaffolding.
+
+- **Week 2 (Naming)**: partial renames that miss `nameof(...)`, comments, DI parameter names, or route/action names.
+- **Week 4 (Functions)**: extracting helpers that mix abstraction levels, or leaving the coordinator method too long (>15 lines).
+- **Week 8 (Repository)**: forgetting `AsNoTracking()` for read paths, not propagating `CancellationToken`, or forgetting to `.Include(...)` needed navigation properties.
+- **Week 9 (Service/DTOs)**: leaking entities from controllers (DTO boundary bypass), or mapping causing null-reference issues on `Project` navigation.
+- **Week 10 (Validation/Errors)**: producing unclear validation messages, or returning inconsistent HTTP shapes (non-ProblemDetails).
+- **Week 12 (OCP filters)**: reintroducing `if/switch` cascades in service/controller instead of additive filter strategies.
+- **Week 17 (Testing)**: over-mocking everything; tests become “I told the mock to return X, it returned X.” Prefer fakes for state and mocks for side-effect verification.
+- **Week 22 (Async)**: sync-over-async (`.Result/.Wait()`), fake cancellation tokens (`new CancellationToken()`), and fire-and-forget tasks in request paths.
+
+---
+
+## Maintenance notes (for curriculum maintainers)
+
+### Keep curriculum and code start-state aligned
+
+When editing weekly markdowns, ensure TaskFlowAPI reflects the **expected start state** for that week. Doc↔code drift is one of the fastest ways to create “busywork” and confusion for brand-new students.
+
+### Consider explicit “start state” snapshots
+
+If you want stronger guarantees, consider defining week start states via:
+
+- **Git tags** (e.g., `week-07-start`, `week-12-start`) or
+- **Long-lived branches** per phase/week
+
+This keeps the weekly module instructions mechanically accurate and reduces accidental drift over time.
+
+### Sample PR documents
+
+Files under `docs/sample-prs/` can intentionally contain issues for review practice, but should stay consistent with the repo’s naming conventions unless the inconsistency is explicitly labeled as intentional.
 
 ---
 
