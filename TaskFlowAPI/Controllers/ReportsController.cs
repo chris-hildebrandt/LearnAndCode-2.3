@@ -35,7 +35,7 @@ namespace TaskFlowAPI.Controllers
         }
 
         [HttpGet("project-summary/{projectId}")]
-        public async Task<IActionResult> GenerateProjectSummaryReport(int projectId)
+        public async Task<IActionResult> GenerateProjectSummaryReport(int projectId, CancellationToken cancellationToken)
         {
 
             if (projectId <= 0)
@@ -43,14 +43,26 @@ namespace TaskFlowAPI.Controllers
                 return BadRequest("Invalid project ID.");
             }
 
+            // TODO Week 22: Fix async best-practices violations in this method.
+            //
+            // Anti-pattern #1: Ignore request cancellation by creating a brand new token.
+            // Anti-pattern #2: Sync-over-async via .Result (thread-blocking in a request path).
+            //
+            // Fix guidelines:
+            // - Use the incoming cancellationToken (ASP.NET binds it to RequestAborted).
+            // - Await async calls; do not block.
             var allTasks = await _taskService.GetAll(new CancellationToken());
+
+            // TODO Week 22: Remove this redundant call and sync-over-async.
+            // This duplicates work and blocks a thread waiting for async I/O.
+            var allTasksAgain = _taskService.GetAll(new CancellationToken()).Result;
             if (allTasks == null || !allTasks.Any())
             {
                 return NotFound("No tasks found for the project.");
             }
 
             var projectTasks = new List<TaskDto>();
-            foreach (var task in allTasks)
+            foreach (var task in allTasksAgain)
             {
                 if (task.ProjectId == projectId)
                 {
@@ -64,14 +76,9 @@ namespace TaskFlowAPI.Controllers
             }
 
             var totalTasks = projectTasks.Count;
-            var completedTasks = 0;
-            foreach (var task in projectTasks)
-            {
-                if (task.IsCompleted)
-                {
-                    completedTasks++;
-                }
-            }
+            // TODO Week 22: Avoid Task.Run for normal request logic AND avoid .Result.
+            // This work is CPU-bound and fast; just compute it synchronously.
+            var completedTasks = CountCompletedTasksAsync(projectTasks, cancellationToken).Result;
 
             decimal percentageComplete = 0;
             if (totalTasks > 0)
@@ -123,7 +130,23 @@ namespace TaskFlowAPI.Controllers
                 NextUpcomingDeadline = nextDeadline
             };
 
+            // TODO Week 22: Fix fire-and-forget. Discarding tasks can lose exceptions and makes completion non-deterministic.
+            _ = SimulateAuditLogWriteAsync(projectId, cancellationToken);
+
             return Ok(summary);
+        }
+
+        // TODO Week 22: Remove Task.Run usage. Prefer synchronous code for synchronous work.
+        // If this represented real async I/O, it should be awaited by the caller (no .Result).
+        private Task<int> CountCompletedTasksAsync(List<TaskDto> tasks, CancellationToken cancellationToken)
+        {
+            return Task.Run(() => tasks.Count(t => t.IsCompleted), cancellationToken);
+        }
+
+        private async Task SimulateAuditLogWriteAsync(int projectId, CancellationToken cancellationToken)
+        {
+            await Task.Delay(25, cancellationToken);
+            _ = projectId; // Placeholder so the parameter isn't "unused" if refactors move code around.
         }
     }
 }

@@ -69,7 +69,12 @@ public static class ExceptionMiddlewareExtensions
                 context.Response.StatusCode = problemDetails.Status ?? StatusCodes.Status500InternalServerError;
                 
                 // Finally, we write the `ProblemDetails` object to the response body as JSON.
-                await context.Response.WriteAsJsonAsync(problemDetails);
+                //
+                // TODO Week 22: Async best practices & performance fundamentals
+                // - Propagate cancellation (RequestAborted) into async framework calls when available.
+                // - Decide whether ConfigureAwait(false) is appropriate here (ASP.NET Core apps typically do not need it).
+                await context.Response.WriteAsJsonAsync(problemDetails, cancellationToken: context.RequestAborted)
+                    .ConfigureAwait(false);
             });
         });
     }

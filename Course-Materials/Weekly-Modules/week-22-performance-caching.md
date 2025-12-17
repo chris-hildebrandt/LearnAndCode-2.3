@@ -1,52 +1,86 @@
-# Week 22: Performance & Caching
+# Week 22: Async Best Practices & Performance Fundamentals
 
-This week, we will focus on the principles of concurrent programming and performance optimization, emphasizing how these concepts align with In Time Tec's commitment to delivering high-quality, scalable solutions.
+This week is about the kind of “performance work” you will actually do on modern ASP.NET Core teams: making request flows reliably asynchronous, avoiding common async/await footguns, and applying a few simple habits that prevent outages and slowdowns.
+
+We are intentionally **not** doing caching this week, and we are skipping Clean Code’s concurrency chapter. Instead, we are using .NET-specific async guidance that directly supports the assignment work you’ll do in this repo.
 
 ## 1. Learning Objectives
 
-- Understand the principles of concurrent programming and performance optimization.
-- Apply best practices for concurrency and performance optimization in your project.
-- Analyze your project for potential concurrency and performance improvements.
-- Implement changes to improve concurrency and performance in your project.
-- Discuss the relationship between concurrency, performance, and In Time Tec's commitment to delivering high-quality, scalable solutions.
-- Apply basic performance improvements (async, caching, response compression).
-- Instrument simple metrics/logs to validate impact.
-- Ensure caching invalidation flows through repository/service layers.
+- Identify and fix common async/await anti-patterns in ASP.NET Core (sync-over-async, fire-and-forget, unnecessary `Task.Run`, etc.).
+- Propagate `CancellationToken` correctly from HTTP request → controller → service/repository calls.
+- Understand when **NOT** to use `ConfigureAwait(false)` in ASP.NET Core applications (and when it *does* make sense in library code).
+- Improve reliability and performance without adding new NuGet packages.
 
-## 2. Reading & Resources (50 min)
+## 2. Reading & Resources (60 min)
 
-- **Clean Code Chapter 13: Concurrency** – Mindset for safe performance tweaks.
-- **Microsoft docs: In-memory caching (`IMemoryCache`)**.
-- **Async best practices in ASP.NET Core**.
+- **Async/Await Best Practices in Asynchronous Programming** by Stephen Cleary (20 min)
+  - The canonical async/await best-practices primer.
+  - Covers “async all the way”, avoiding `async void`, and common deadlock/perf footguns.
+- **ConfigureAwait FAQ** by Stephen Toub (15 min)
+  - Explains context capturing and when `ConfigureAwait(false)` helps (and when it’s unnecessary).
+- **Performance Best Practices in ASP.NET Core** (25 min)
+  - Official Microsoft guidance for high-signal performance decisions in web apps.
+  - Emphasizes async I/O, cancellation, and avoiding thread pool starvation.
 
 ## 3. This Week’s Work
 
-- Add in-memory caching for `GetAllTasksAsync` results (keyed by filter parameters + pagination).
-- Ensure cache invalidated on create/update/delete.
-- Confirm all repository/service methods use `async/await` (no `.Result` or `.Wait`).
-- Enable response compression middleware if not already active (verify config).
+You will fix intentionally-bad async code that compiles and “works”, but violates best practices and creates performance/reliability risk.
+
+**Deliverable:** Resolve every `// TODO Week 22:` comment you find in the codebase and ensure no new async anti-patterns remain.
 
 ## 4. Files to Modify
 
-- `TaskFlowAPI/Services/Tasks/TaskService.cs`
-- `TaskFlowAPI/Services/Tasks/Interfaces` if adding caching abstraction.
-- `TaskFlowAPI/Program.cs` (cache configuration).
-- Optional: add `TaskFlowAPI/Infrastructure/Caching/ITaskCache.cs`, `MemoryTaskCache.cs`.
-- Update tests to account for caching (e.g., verifying invalidation).
+- `TaskFlowAPI/Controllers/ReportsController.cs`
+- `TaskFlowAPI/Extensions/ExceptionMiddlewareExtensions.cs`
+- Any other files impacted by your changes (use the compiler + find-all-references to guide you).
 - This file (`Course-Materials/Weekly-Modules/week-22-performance-caching.md`) – append your journal and discussion prompt responses.
 - `WEEKLY_PROGRESS.md`
 
 ## 5. Step-by-Step Instructions
 
-1. Branch `week-22/<your-name>`.
-2. Design caching strategy: create abstraction `ITaskCache` to get/set cached `PagedResponse` by filter signature.
-3. Implement `MemoryTaskCache` using `IMemoryCache` with TTL (e.g., 60 seconds) and configurable options.
-4. Inject cache into `TaskService`; apply when fetching tasks.
-5. Invalidate cache on create/update/delete operations.
-6. Verify all repository/service methods use `async/await` (no leftover synchronous calls).
-7. Confirm `app.UseResponseCompression()` is enabled and configure MIME types if needed.
-8. Add logging around cache hits/misses for observability.
-9. Run build/tests + manual GET to verify caching (log output confirms hits).
+1. Create branch `week-22/<your-name>`.
+
+2. **Read the async articles first (60 min).**
+   - Do not start “fixing code” until you understand what patterns to look for.
+
+3. **Find the Week 22 targets (5 min).**
+   - Search the codebase for:
+     - `TODO Week 22`
+     - `.Result`
+     - `.Wait(`
+     - `Task.Run(`
+     - `new CancellationToken()`
+     - `ConfigureAwait(`
+
+4. **Task A — Fix sync-over-async (25–35 min)**
+   - Remove blocking calls like `.Result` / `.Wait()` / `.GetAwaiter().GetResult()`.
+   - Replace them with `await` **all the way down**.
+   - Rule: In ASP.NET Core request-handling code, you almost never want to block a thread waiting for async work.
+
+5. **Task B — Fix cancellation token propagation (20–30 min)**
+   - Do not create tokens with `new CancellationToken()` in a request path.
+   - Use the provided `CancellationToken` (ASP.NET Core will bind it to the request abort token).
+   - Ensure any async framework calls that accept a token are passed the token.
+
+6. **Task C — Fix fire-and-forget (15–25 min)**
+   - Identify any “discarded task” usage (`_ = SomeAsyncCall();`).
+   - Decide the correct behavior:
+     - Most often: `await` it.
+     - If you truly must background work: you must have a plan for exceptions + lifetime (this is rare in request code).
+
+7. **ConfigureAwait exercise (10 min)**
+   - If you see `ConfigureAwait(false)` inside the web app code, decide whether it is helpful.
+   - Default rule for this course: **Do not use `ConfigureAwait(false)` in ASP.NET Core app code unless you can justify it in writing.**
+
+8. Run build and tests:
+
+```bash
+dotnet build TaskFlowAPI.sln
+dotnet test TaskFlowAPI.sln
+```
+
+Optional manual verification:
+- Run the API and hit the Reports endpoint twice; confirm it still returns a valid response and no warnings/errors appear in logs.
 
 ## 6. How to Test
 
@@ -54,402 +88,52 @@ This week, we will focus on the principles of concurrent programming and perform
 dotnet build TaskFlowAPI.sln
 dotnet test TaskFlowAPI.sln
 ```
-- Manual: call `GET /api/v1/tasks` twice and confirm second call logs cache hit.
 
 ## 7. Success Criteria
 
-- Cache abstraction introduced; no direct `IMemoryCache` usage outside infrastructure class.
-- Cache invalidated after any write operations.
-- Async patterns consistent (no synchronous blocking).
-- Build/tests succeed; logs show cache activity.
+- No `.Result`, `.Wait()`, or `.GetAwaiter().GetResult()` in request-handling code.
+- No `new CancellationToken()` used to “fake” cancellation in request-handling code.
+- No `Task.Run` used to wrap normal request logic.
+- No fire-and-forget async calls in request-handling code (or they are explicitly justified and safely handled).
+- Build and tests succeed.
 
 ## 8. Submission Process
 
-1.  Create a new branch for your weekly work (e.g., `git checkout -b week-22-submission`).
-2.  Commit your changes to this branch (e.g., `git commit -m "feat: Complete Week 22 work"`).
-3.  Push the branch to your forked repository on GitHub.
-4.  On GitHub, create a Pull Request from your new branch to your `main` branch.
-5.  Review, approve, and merge your own Pull Request.
+> **Reminder:** For your weekly submission, please follow the fork-and-PR workflow outlined in the `SETUP.MD` guide. You will create a Pull Request on your **own fork**, not the main curriculum repository, and then approve and merge it yourself.
+
+1. Create a new branch for your weekly work (e.g., `git checkout -b week-22-submission`).
+2. Commit your changes to this branch (e.g., `git commit -m "refactor: fix async anti-patterns"`).
+3. Push the branch to your forked repository on GitHub.
+4. On GitHub, create a Pull Request from your new branch to your `main` branch.
+5. Review, approve, and merge your own Pull Request.
 
 ## 9. Journal and Discussion Prep
 
 (Use this section as a journal of your learning. Answer the questions below after completing the reading and assignment. ALSO record any questions or comments you would like to bring up during this week's discussion.)
 
 ### Journal:
-- *Cache Strategy:* Outline your cache key structure and invalidation triggers.
-- *Async Audit:* Note any synchronous calls you replaced and the impact on readability/performance.
+
+- *Sync-over-Async:* Which blocking call did you remove, and what failure mode does it prevent in a web server?
+- *Cancellation:* Where did your cancellation token originate, and where did you propagate it to?
+- *Fire-and-Forget:* What’s the risk of discarding tasks in ASP.NET Core request code?
+- *ConfigureAwait:* In your own words, what does `ConfigureAwait(false)` change, and why is it usually unnecessary in ASP.NET Core apps?
 
 ### Discussion Prep:
-- *How did caching change the service design?*
-- *What risks exist if cache invalidation fails?*
-- *What metrics would you add in a production environment?*
-- *How will you test caching behavior in automated builds?*
+
+- *If ASP.NET Core has no SynchronizationContext by default, why is sync-over-async still a problem?*
+- *What is your team’s policy for background work triggered by HTTP requests?*
+- *What would you log/measure in production to detect thread pool starvation?*
 
 ## 10. Time Estimate
 
-- 50 min – Reading.
-- 15 min – Design caching strategy.
-- 45 min – Implement cache + async audit.
-- 20 min - Journal + discussion prep.
+- 60 min – Reading.
+- 60–90 min – Async audit + fixes.
+- 20 min – Journal and discussion prep.
 - 15 min – Test => PR => Review => Merge.
-**Total:** ~125 minutes.
 
-## 11. Caching Examples & Patterns
+**Total:** ~2 hours 35 minutes.
 
-### Define ITaskCache Interface
+## 11. Additional Resources
 
-```csharp
-namespace TaskFlowAPI.Infrastructure.Caching;
-
-/// <summary>
-/// Abstraction for caching task query results
-/// </summary>
-public interface ITaskCache
-{
-    /// <summary>
-    /// Gets cached value by key
-    /// </summary>
-    Task<PagedResponse<TaskDto>?> GetAsync(string key);
-    
-    /// <summary>
-    /// Sets value in cache with optional TTL (time-to-live)
-    /// </summary>
-    Task SetAsync(string key, PagedResponse<TaskDto> value, TimeSpan? ttl = null);
-    
-    /// <summary>
-    /// Removes specific key from cache
-    /// </summary>
-    Task RemoveAsync(string key);
-    
-    /// <summary>
-    /// Clears all cached entries
-    /// </summary>
-    Task ClearAsync();
-}
-```
-
-### Implement MemoryTaskCache
-
-```csharp
-using Microsoft.Extensions.Caching.Memory;
-
-namespace TaskFlowAPI.Infrastructure.Caching;
-
-public class MemoryTaskCache : ITaskCache
-{
-    private readonly IMemoryCache _cache;
-    private readonly ILogger<MemoryTaskCache> _logger;
-    private static readonly TimeSpan DefaultTtl = TimeSpan.FromSeconds(60);
-    
-    public MemoryTaskCache(IMemoryCache cache, ILogger<MemoryTaskCache> logger)
-    {
-        _cache = cache;
-        _logger = logger;
-    }
-    
-    public Task<PagedResponse<TaskDto>?> GetAsync(string key)
-    {
-        if (_cache.TryGetValue(key, out PagedResponse<TaskDto>? value))
-        {
-            _logger.LogInformation("Cache hit for key: {Key}", key);
-            return Task.FromResult(value);
-        }
-        
-        _logger.LogInformation("Cache miss for key: {Key}", key);
-        return Task.FromResult<PagedResponse<TaskDto>?>(null);
-    }
-    
-    public Task SetAsync(string key, PagedResponse<TaskDto> value, TimeSpan? ttl = null)
-    {
-        var options = new MemoryCacheEntryOptions
-        {
-            AbsoluteExpirationRelativeToNow = ttl ?? DefaultTtl
-        };
-        
-        _cache.Set(key, value, options);
-        _logger.LogInformation("Cached value for key: {Key} with TTL: {Ttl}", 
-            key, ttl ?? DefaultTtl);
-        
-        return Task.CompletedTask;
-    }
-    
-    public Task RemoveAsync(string key)
-    {
-        _cache.Remove(key);
-        _logger.LogInformation("Removed cache key: {Key}", key);
-        return Task.CompletedTask;
-    }
-    
-    public Task ClearAsync()
-    {
-        // Note: IMemoryCache doesn't have a Clear() method
-        // Options: 1) Track keys, 2) Create wrapper, 3) Restart app
-        // For this example, we'll log a warning
-        _logger.LogWarning("MemoryCache does not support clearing all entries");
-        return Task.CompletedTask;
-    }
-}
-```
-
-### Cache Key Generation
-
-```csharp
-private string GenerateCacheKey(ITaskFilter? filter, int page, int pageSize)
-{
-    // Simple approach: combine filter + pagination into unique key
-    var filterKey = filter?.GetHashCode().ToString() ?? "all";
-    return $"tasks_{filterKey}_p{page}_s{pageSize}";
-}
-
-// Alternative: More robust key generation
-private string GenerateCacheKey(TaskQueryParams queryParams)
-{
-    var parts = new List<string>
-    {
-        "tasks",
-        $"p{queryParams.Page}",
-        $"s{queryParams.PageSize}"
-    };
-    
-    if (queryParams.Status.HasValue)
-        parts.Add($"status{queryParams.Status}");
-        
-    if (queryParams.Priority.HasValue)
-        parts.Add($"priority{queryParams.Priority}");
-        
-    if (queryParams.DueBefore.HasValue)
-        parts.Add($"duebefore{queryParams.DueBefore:yyyyMMdd}");
-    
-    return string.Join("_", parts);
-}
-```
-
-### TTL (Time-To-Live) Guidelines
-
-```csharp
-public static class CacheTtl
-{
-    /// <summary>
-    /// Short TTL for frequently changing data (tasks)
-    /// </summary>
-    public static readonly TimeSpan Short = TimeSpan.FromSeconds(30);
-    
-    /// <summary>
-    /// Medium TTL for relatively stable data
-    /// </summary>
-    public static readonly TimeSpan Medium = TimeSpan.FromMinutes(5);
-    
-    /// <summary>
-    /// Long TTL for rarely changing data
-    /// </summary>
-    public static readonly TimeSpan Long = TimeSpan.FromHours(1);
-}
-```
-
-**For tasks:** 60 seconds balances freshness and performance
-
-- Too short (< 10s): Cache benefits minimal
-- Too long (> 5 min): Stale data risk
-- Sweet spot (30-60s): Good balance for active applications
-
-### Usage in TaskService
-
-```csharp
-public class TaskService
-{
-    private readonly ITaskReader _taskReader;
-    private readonly ITaskWriter _taskWriter;
-    private readonly ITaskCache _cache;
-    private readonly ILogger<TaskService> _logger;
-    
-    public async Task<PagedResponse<TaskDto>> GetAllTasksAsync(
-        ITaskFilter? filter, 
-        int page, 
-        int pageSize)
-    {
-        // Generate cache key
-        var cacheKey = GenerateCacheKey(filter, page, pageSize);
-        
-        // Try cache first
-        var cached = await _cache.GetAsync(cacheKey);
-        if (cached != null)
-        {
-            return cached;
-        }
-        
-        // Cache miss - fetch from database
-        _logger.LogInformation("Fetching tasks from database");
-        var tasks = await _taskReader.GetAllAsync();
-        
-        // Apply filters
-        if (filter != null)
-        {
-            tasks = tasks.Where(t => filter.IsMatch(t)).ToList();
-        }
-        
-        // Apply pagination
-        var pagedResult = ApplyPagination(tasks, page, pageSize);
-        
-        // Store in cache
-        await _cache.SetAsync(cacheKey, pagedResult, TimeSpan.FromSeconds(60));
-        
-        return pagedResult;
-    }
-}
-```
-
-### Cache Invalidation Pattern
-
-```csharp
-public async Task<TaskDto> CreateTaskAsync(CreateTaskRequest request)
-{
-    var entity = _factory.CreateNewTask(request);
-    var created = await _taskWriter.CreateAsync(entity);
-    
-    // Invalidate all cached task lists
-    await _cache.ClearAsync();
-    
-    _logger.LogInformation("Task created, cache invalidated");
-    
-    return _mapper.ToDto(created);
-}
-
-public async Task UpdateTaskAsync(int id, UpdateTaskRequest request)
-{
-    var existing = await _taskReader.GetByIdAsync(id);
-    
-    if (existing == null)
-        throw new TaskNotFoundException(id);
-    
-    // Update logic...
-    await _taskWriter.UpdateAsync(existing);
-    
-    // Invalidate cache
-    await _cache.ClearAsync();
-    
-    return _mapper.ToDto(existing);
-}
-
-public async Task DeleteTaskAsync(int id)
-{
-    var existing = await _taskReader.GetByIdAsync(id);
-    
-    if (existing == null)
-        return; // Idempotent delete
-    
-    await _taskWriter.DeleteAsync(existing);
-    
-    // Invalidate cache
-    await _cache.ClearAsync();
-}
-```
-
-**Cache Invalidation Strategies:**
-
-1. **Clear All** (simple): Remove all cached entries on any write
-   - Pros: Simple, no stale data
-   - Cons: Throws away good cache entries
-
-2. **Selective** (advanced): Remove only affected entries
-   - Pros: Preserves unrelated cache
-   - Cons: Complex key tracking
-
-3. **TTL-based** (passive): Let cache expire naturally
-   - Pros: No invalidation code
-   - Cons: Stale data risk
-
-**For TaskFlow API:** Start with "Clear All" (simple), optimize later if needed
-
-### DI Registration (Program.cs)
-
-```csharp
-// Register memory cache (built-in)
-builder.Services.AddMemoryCache();
-
-// Register our cache abstraction
-builder.Services.AddScoped<ITaskCache, MemoryTaskCache>();
-
-// Optional: Configure memory cache options
-builder.Services.AddMemoryCache(options =>
-{
-    options.SizeLimit = 1024; // Limit cache size
-    options.CompactionPercentage = 0.2; // Compact when 80% full
-});
-```
-
-### Testing Cache Behavior
-
-```csharp
-[Fact]
-public async Task GetAllTasks_CachesResult()
-{
-    // Arrange
-    var mockCache = new Mock<ITaskCache>();
-    mockCache.Setup(c => c.GetAsync(It.IsAny<string>()))
-        .ReturnsAsync((PagedResponse<TaskDto>?)null); // Cache miss
-    
-    var service = new TaskService(mockReader, mockWriter, mockCache.Object, ...);
-    
-    // Act
-    var result = await service.GetAllTasksAsync(null, 1, 20);
-    
-    // Assert
-    mockCache.Verify(c => c.SetAsync(
-        It.IsAny<string>(), 
-        It.IsAny<PagedResponse<TaskDto>>(), 
-        It.IsAny<TimeSpan?>()), 
-        Times.Once);
-}
-
-[Fact]
-public async Task GetAllTasks_ReturnsCachedResult_WhenAvailable()
-{
-    // Arrange
-    var cachedResult = new PagedResponse<TaskDto> { /* ... */ };
-    
-    var mockCache = new Mock<ITaskCache>();
-    mockCache.Setup(c => c.GetAsync(It.IsAny<string>()))
-        .ReturnsAsync(cachedResult); // Cache hit
-    
-    var mockReader = new Mock<ITaskReader>();
-    var service = new TaskService(mockReader.Object, mockWriter, mockCache.Object, ...);
-    
-    // Act
-    var result = await service.GetAllTasksAsync(null, 1, 20);
-    
-    // Assert
-    Assert.Same(cachedResult, result);
-    mockReader.Verify(r => r.GetAllAsync(), Times.Never); // Database not called
-}
-```
-
-### Monitoring Cache Effectiveness
-
-```csharp
-// Add metrics/logging to track cache performance
-private int _cacheHits = 0;
-private int _cacheMisses = 0;
-
-public async Task<PagedResponse<TaskDto>?> GetAsync(string key)
-{
-    if (_cache.TryGetValue(key, out PagedResponse<TaskDto>? value))
-    {
-        Interlocked.Increment(ref _cacheHits);
-        _logger.LogInformation("Cache hit rate: {HitRate:P}", 
-            (double)_cacheHits / (_cacheHits + _cacheMisses));
-        return value;
-    }
-    
-    Interlocked.Increment(ref _cacheMisses);
-    return null;
-}
-```
-
-## 12. Additional Resources
-
-- **[Concurrency and Performance Example](../Examples/ConcurrencyAndPerformance.md)**
-- **[Introduction to Concurrent Programming: A Beginner's Guide](https://www.toptal.com/software/introduction-to-concurrent-programming)** – Optional concurrency refresher.
-- **[MIT: Concurrency](https://web.mit.edu/6.005/www/fa14/classes/17-concurrency/)** – Optional deep dive for those investigating threading.
-- **[Concurrency in JavaScript](https://www.honeybadger.io/blog/javascript-concurrency/#:~:text=JavaScript's%20concurrency%20model%20is%20based,promises%2C%20or%20async%2Fawait.)**
-- **[Concurrency Part 1](https://www.youtube.com/watch?v=f99zSz5D5RE&list=PL-uROEx3vAxg-yricXrDaOK9xzHGGQk1u&index=13)**
-- **[Concurrency Part 2](https://www.youtube.com/watch?v=199dVfVnpMo&list=PL-uROEx3vAxg-yricXrDaOK9xzHGGQk1u&index=14)**
+- **[Microsoft docs: Cancellation in ASP.NET Core](https://learn.microsoft.com/aspnet/core/fundamentals/request-features?view=aspnetcore-8.0)** (focus: request aborts / cancellation tokens)
+- **[Stephen Cleary’s blog](https://blog.stephencleary.com/)** (optional deep dives)
