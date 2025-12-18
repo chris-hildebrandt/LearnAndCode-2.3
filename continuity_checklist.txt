@@ -1,0 +1,278 @@
+# Weekly Module Continuity Checklist
+
+## Purpose
+Standard checklist for reviewing weekly module files to ensure consistency, quality, and proper formatting across all weeks.
+
+---
+
+## 1. Agent Meta-Commentary Check
+
+**❌ NEVER INCLUDE:**
+- "NEW" tags
+- "REVISED" tags
+- "UPDATED" tags
+- Strikethrough text
+- Version commentary ("we've added...", "previously...")
+- References to what changed
+
+**✅ CORRECT STYLE:**
+- Present tense, authoritative
+- Direct instructions
+- Clean, as if it's always been this way
+
+**How to Check:**
+- Search document for: `NEW`, `REVISED`, `UPDATED`, `~~`
+- Look for phrases like "we've changed" or "now includes"
+
+---
+
+## 2. Branch Naming Consistency
+
+**Standard Format:** `week-XX-submission` (where XX is week number)
+
+**Check These Locations:**
+- Section 5, Step 1 (first instruction)
+- Section 8 (Submission Process)
+
+**Common Errors:**
+- `week-XX/<your-name>` (old pattern)
+- `week-XX-work` (wrong suffix)
+- Inconsistent between Section 5 and Section 8
+
+---
+
+## 3. Section Numbering & Structure
+
+**Standard Structure (11 sections):**
+1. Learning Objectives
+2. Reading & Resources
+3. This Week's Work
+4. Files to Modify
+5. Step-by-Step Instructions
+6. How to Test
+7. Success Criteria
+8. Submission Process
+9. Journal and Discussion Prep
+10. Time Estimate
+11. Additional Resources
+
+**Exceptions:**
+- Week 1: 14 sections (orientation week - acceptable)
+
+**How to Check:**
+- Count section headers (`##`)
+- Verify numbering is sequential
+- Check for missing or extra sections
+
+---
+
+## 4. Time Estimate Accuracy
+
+**Check:**
+1. **Inline estimates** in section headers match breakdown
+   - Example: "Reading & Resources (45 min)" must appear in Section 10
+
+2. **Math adds up** in Section 10
+   - List all time items
+   - Calculate total
+   - Verify total matches stated total
+
+3. **Consistent naming** of time items
+   - Use `–` (en dash) not `-` (hyphen)
+   - Format: `XX min – Description.`
+   - Total format: `**Total:** ~X hours XX minutes.`
+
+**Example Section 10:**
+```markdown
+- 45 min – Reading.
+- 30 min – Code refactoring.
+- 20 min – Journal and discussion prep.
+- 15 min – Create PR and merge.
+
+**Total:** ~1 hour 50 minutes.
+```
+
+**Math check:** 45 + 30 + 20 + 15 = 110 minutes = 1 hour 50 minutes ✅
+
+---
+
+## 5. Punctuation Consistency
+
+**Rules:**
+- ALL bullet points end with periods
+- ALL list items use proper punctuation
+- Section headers: No periods
+- Subsection headers: No periods
+
+**How to Check:**
+- Scan all bullet lists in:
+  - Learning Objectives
+  - This Week's Work
+  - Files to Modify
+  - Success Criteria
+- Verify each ends with period
+
+---
+
+## 6. Journal Question Formatting
+
+**Standard Format:** `*Label: Question text?*`
+
+**Examples:**
+- ✅ `*Git Tutorial Reflection: What was the most challenging concept?*`
+- ❌ `*Git Tutorial Reflection* What was the most challenging concept?` (missing colon)
+- ❌ `Git Tutorial Reflection: What was the most challenging concept?` (missing italics)
+
+**How to Check:**
+- All journal questions in Section 9
+- Should use consistent italic markdown: `*...*`
+- Label followed by colon, then question
+
+---
+
+## 7. Files to Modify Alignment
+
+**Check:**
+- Files listed in Section 4 match files mentioned in Section 5 (Step-by-Step)
+- No "ghost files" (mentioned but never actually modified)
+- No missing files (modified but not listed)
+
+**Example Check:**
+- Section 4 lists: `TaskEntity.cs`, `TaskFlowDbContext.cs`
+- Section 5 should mention modifying both
+- If Section 5 only modifies TaskEntity.cs → Section 4 error
+
+---
+
+## 8. Success Criteria Alignment
+
+**Check:**
+- Success criteria (Section 7) match what Step-by-Step (Section 5) actually does
+- No criteria for work not assigned
+- No missing criteria for assigned work
+
+**Example:**
+- Section 5 says "Add Complete() method"
+- Section 7 must include "Complete() method implemented"
+
+---
+
+## 9. Step-by-Step Quality
+
+**Requirements:**
+- Numbered steps (1, 2, 3...)
+- Each step is clear and actionable
+- Includes exact git commands where applicable
+- Safe for least experienced developers
+
+**Red Flags:**
+- Vague instructions ("do the thing")
+- Missing git commands
+- Assumes knowledge not taught yet
+- Overly complex nested steps
+
+---
+
+## 10. Reading Time Estimates
+
+**Check:**
+- Inline time estimate in Section 2 header
+- Matches time in Section 10 breakdown
+- Realistic for actual content
+
+**Video Resources:**
+- If videos listed, time should reflect watching them
+- Clearly mark videos as optional if not required
+
+**Example:**
+```markdown
+## 2. Reading & Resources (45 min)
+
+- **Clean Code Chapter 10** (30 min)
+- **[Article Title](link)** (15 min)
+```
+
+Section 10 must include: `45 min – Reading.`
+
+---
+
+## 11. Additional Resources Organization
+
+**Standard Subsections:**
+- Examples (internal course files)
+- External Resources (articles, documentation)
+- Video Resources (if applicable)
+- Deep Dives / Optional (clearly marked)
+
+**How to Check:**
+- Section 11 should have clear subsections using `###`
+- Internal examples listed first
+- External resources grouped logically
+- Optional content clearly labeled
+
+---
+
+## 12. Submission Process Standardization
+
+**Section 8 must be identical across all weeks:**
+
+```markdown
+> **Reminder:** For your weekly submission, please follow the fork-and-PR workflow outlined in the `SETUP.MD` guide. You will create a Pull Request on your **own fork**, not the main curriculum repository, and then approve and merge it yourself.
+
+1. Create a new branch for your weekly work (e.g., `git checkout -b week-XX-submission`).
+2. Commit your changes to this branch (e.g., `git commit -m "feat: Complete Week XX work"`).
+3. Push the branch to your forked repository on GitHub.
+4. On GitHub, create a Pull Request from your new branch to your `main` branch.
+5. Review, approve, and merge your own Pull Request.
+```
+
+**Only XX changes** - rest is copy/paste
+
+---
+
+## 13. Assignment-Chapter Alignment
+
+**Critical Check:**
+- Reading assignment (Section 2) matches work assignment (Sections 3-5)
+- No busywork - every task teaches a principle from the reading
+- Assignment is relevant to TaskFlowAPI's actual needs
+
+**Red Flags:**
+- Reading about X, assignment does Y (unrelated)
+- Assignment feels artificial or forced
+- Work doesn't fit naturally into project structure
+
+---
+
+## Quick Scan Checklist
+
+Use this for rapid review:
+
+- [ ] No "NEW", "REVISED", "UPDATED" tags anywhere
+- [ ] Branch naming: `week-XX-submission` consistently
+- [ ] 11 sections (or 14 for Week 1)
+- [ ] Time math adds up correctly
+- [ ] All bullets end with periods
+- [ ] Journal questions use `*Label: Question?*` format
+- [ ] Files to Modify = Files mentioned in Step-by-Step
+- [ ] Success Criteria = Work actually assigned
+- [ ] Step-by-Step has clear numbered steps
+- [ ] Section 8 (Submission) is standard template
+- [ ] Assignment teaches principles from reading
+- [ ] Additional Resources has subsections
+
+---
+
+## When to Use This Checklist
+
+**Use for:**
+- ✅ New weekly modules created
+- ✅ Existing modules being updated
+- ✅ After AI generates content (always verify)
+- ✅ Before marking a week "complete"
+- ✅ When standardizing multiple weeks at once
+
+**Don't need for:**
+- ❌ Quick typo fixes
+- ❌ Journal entry updates (student-facing)
+- ❌ Example files (different format)

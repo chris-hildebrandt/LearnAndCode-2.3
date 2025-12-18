@@ -1,0 +1,231 @@
+# Curriculum Alignment Reference
+
+## Purpose
+Track Clean Code chapter alignment, verify assignments match principles, ensure no busywork, and maintain TaskFlowAPI integrity.
+
+---
+
+## Clean Code Chapter Overview
+
+### Chapter 6: Objects and Data Structures (pp. 89-110)
+**Core Principles:**
+- Objects expose behavior, hide data
+- Data structures expose data, have no behavior
+- Law of Demeter (don't talk to strangers)
+- DTOs are pure data carriers
+- Avoid hybrids (half object, half data structure)
+
+**Key Question:** When should I use an object vs a data structure?
+
+---
+
+### Chapter 10: Classes (pp. 137-154)
+**Core Principles:**
+- Classes should be small (Single Responsibility Principle)
+- High cohesion (methods use same instance variables)
+- Low coupling (minimal dependencies between classes)
+- Organize for change (Open/Closed Principle)
+- One reason to change
+
+**Key Question:** Is this class doing too many things?
+
+---
+
+### Chapter 11: Systems (pp. 155-174)
+**Core Principles:**
+- Separate construction from use
+- Dependency Injection
+- Keep boundaries clean
+- Scale up (start simple, grow as needed)
+- Test-drive the system architecture
+
+**Key Question:** How do we organize components at the system level?
+
+---
+
+## Current Curriculum Status
+
+### Week 7: Classes & Encapsulation
+**Current Reading:** Chapter 10 (Classes)
+**Current Assignment:** Add encapsulation to TaskEntity (private constructor, factory method, Complete() behavior)
+
+**Analysis:**
+- ✅ Assignment teaches encapsulation (objects hide data, expose behavior)
+- ❌ **MISALIGNED:** This is Chapter 6 content, not Chapter 10!
+- ❌ Chapter 10 is about SRP, cohesion, class organization
+- ✅ Assignment is valuable and fits project needs
+
+**Recommendation:** Change reading to Chapter 6 OR change assignment to SRP work
+
+---
+
+### Week 8: Repository Pattern
+**Current Reading:** Chapter 11 (Systems)
+**Current Assignment:** Implement TaskRepository methods (GetAll, GetById, Create, Update, Delete)
+
+**Analysis:**
+- ✅ Repository Pattern = separation of concerns (systems-level thinking)
+- ✅ Aligns with "separate construction from use"
+- ✅ Assignment is concrete EF Core practice
+- ✅ No busywork - repository is needed for project
+
+**Status:** ✅ ALIGNED
+
+---
+
+### Week 9: Service Layer & DTOs
+**Current Reading:** Chapter 6 (Objects and Data Structures) + Chapter 11 selections
+**Current Assignment:** Implement TaskService methods, map between Entity and DTO
+
+**Analysis:**
+- ✅ Directly teaches Chapter 6: Entity = object (behavior), DTO = data structure (no behavior)
+- ✅ Section 11 "DTO vs Entity Decision Framework" explicitly teaches object/data structure distinction
+- ✅ Assignment is concrete and necessary for project
+- ⚠️ **OVERLAP:** Week 7 also teaches Chapter 6 content (encapsulation)
+
+**Status:** ✅ ALIGNED (but overlaps with Week 7)
+
+---
+
+### Week 10: Error Handling & Validation
+**Current Reading:** Chapter 7 (Error Handling)
+**Current Assignment:** Implement FluentValidation, domain exceptions, global error handling
+
+**Analysis:**
+- ✅ Directly teaches Chapter 7 principles
+- ✅ Prefer exceptions to error codes
+- ✅ Separate error handling from happy path
+- ✅ Assignment is concrete and necessary
+
+**Status:** ✅ ALIGNED
+
+---
+
+### Week 11: Single Responsibility Principle (SRP)
+**Current Reading:** Chapter 3 (Functions) revisit
+**Current Assignment:** Extract TaskMapper, TaskBusinessRules, TaskValidator from TaskService
+
+**Analysis:**
+- ✅ Teaches SRP: TaskService was doing too many things
+- ✅ Extraction creates focused classes
+- ⚠️ **READING MISMATCH:** Should read Chapter 10 (Classes/SRP), not Chapter 3 (Functions)
+- ✅ Assignment is concrete refactoring of real SRP violation
+
+**Status:** ⚠️ MOSTLY ALIGNED (wrong chapter referenced)
+
+---
+
+## The Problem: Two Assignments, One Chapter
+
+**Issue:** Both Week 7 AND Week 9 teach Chapter 6 concepts
+- Week 7: Encapsulation (objects hide data, expose behavior)
+- Week 9: Objects vs Data Structures (Entity vs DTO)
+
+**Neither teaches Chapter 10:**
+- Chapter 10: SRP, cohesion, organizing classes at system level
+- No assignment currently demonstrates "is this class doing too many things?"
+
+---
+
+## Proposed Solutions
+
+### Option A: Swap Week 7 and Week 9 Content (RECOMMENDED)
+
+**New Structure:**
+- **Week 7:** Chapter 6 → Service Layer & DTOs (current Week 9)
+  - Teaches: Objects vs Data Structures
+  - Assignment: Implement TaskService, map Entity ↔ DTO
+  - Fits naturally after Week 6 (git)
+
+- **Week 8:** Repository Pattern (no change)
+  - Reading: Chapter 11 (Systems)
+  - Assignment: Implement TaskRepository
+
+- **Week 9:** Chapter 6 (continued) → Encapsulation (current Week 7)
+  - Teaches: Objects hide data, expose behavior
+  - Assignment: Add private constructor, factory, Complete() to TaskEntity
+  - Natural follow-up after using entities in service layer
+
+- **Week 10:** Error Handling (no change)
+
+- **Week 11:** Chapter 10 → SRP Refactoring
+  - Teaches: Classes should be small, single responsibility
+  - Assignment: Extract TaskMapper, TaskBusinessRules from TaskService
+  - Perfect timing - they just created the "god class" in Weeks 7-9
+
+**Benefits:**
+- ✅ Chapter 6 gets proper 2-week coverage (complex topic)
+- ✅ Chapter 10 taught at right time (after creating the mess to refactor)
+- ✅ Natural progression: Use objects → Organize classes → Clean up
+- ✅ All assignments remain valuable, just reordered
+
+---
+
+### Option B: Create New SRP Assignment for Week 7
+
+**Keep current order, but:**
+- **Week 7:** Chapter 10 → Refactor TaskHelper.cs
+  - Assignment: Split TaskHelper into PriorityFormatter, TaskFilter, DateCalculator
+  - Teaches: Identify SRP violations, extract focused classes
+
+**Problems:**
+- ❌ Loses valuable encapsulation assignment
+- ❌ TaskHelper might not have enough educational value
+- ❌ Encapsulation still needs a home
+
+---
+
+### Option C: Keep Current, Acknowledge Overlap
+
+**Week 7:** Encapsulation (Chapter 6 Part 1)
+**Week 9:** Objects vs Data (Chapter 6 Part 2)
+**Week 11:** SRP (Chapter 10, fix reading reference)
+
+**Accept that:**
+- Chapter 6 is complex enough for 2 weeks
+- Chapter 10 gets covered in Week 11 only
+- No Chapter 10 content in Week 7
+
+---
+
+## Recommendation: Option A
+
+**Rationale:**
+1. Natural learning progression
+2. Chapter 6 properly covered over 2 weeks
+3. Chapter 10 taught at perfect moment (after creating the mess)
+4. No assignments lost or created
+5. All work remains relevant to TaskFlowAPI
+
+---
+
+## TaskFlowAPI Components Status
+
+### Currently Implemented (through Week 6):
+- ✅ Controllers (renamed in Week 2)
+- ✅ DTOs (renamed in Week 2)
+- ✅ Entities (basic structure)
+- ✅ Services (structure only, NotImplementedException)
+- ✅ Repositories (structure only, NotImplementedException)
+
+### Will Be Implemented:
+- Week 7/9: TaskEntity encapsulation
+- Week 7/9: TaskService + DTO mapping
+- Week 8: TaskRepository
+- Week 10: Validation + Error handling
+- Week 11: Extract TaskMapper, TaskBusinessRules
+
+### Intentionally Incomplete:
+- TaskHelper.cs - Has code smells for later reference
+- Filters (Strategy pattern) - Week 12
+- Validators - Scaffolding only until Week 10
+
+---
+
+## Next Steps
+
+1. ✅ Finalize which option to pursue
+2. ⏭️ If Option A: Reorder Weeks 7 & 9 content
+3. ⏭️ Update Week 11 reading reference (Chapter 3 → Chapter 10)
+4. ⏭️ Verify Week 8 needs no changes
+5. ⏭️ Check Weeks 12+ for any dependencies on current order
